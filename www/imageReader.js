@@ -6,6 +6,8 @@ function getUrlVars() {
   return vars;
 }
 
+var areaSelect;
+
 window.onload = function() {
   br = new BookReader();
 
@@ -85,7 +87,7 @@ window.onload = function() {
   $('#offsetX').val(Math.round($('#pageID').offset().left));
 
   if (getUrlVars()["editable"] == 'true') {
-    var areaSelect = $('#pageID').imgAreaSelect({
+    areaSelect = $('#pageID').imgAreaSelect({
       handles: true,
       instance: true,
       onSelectEnd: function(img, selection) {
