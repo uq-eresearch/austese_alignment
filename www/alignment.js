@@ -688,3 +688,10 @@
     document.getElementById('image-search-button').setAttribute('disabled','disabled');
     document.getElementById('text-search-button').setAttribute('disabled','disabled');
   }
+
+  // Clear the selected image annotation in the image iframe
+  // TESTING
+  function highlightText(startOffset, endOffset) {
+    var text_iframe = document.getElementById('text-input'); 
+    text_iframe.contentWindow.focusTextOffsets(startOffset, endOffset);
+  }

@@ -30,7 +30,7 @@ window.onload = function() {
     parent.window.clearSelectedImage();
   });
 
-  $("#container-div-2").click(function() {
+  $("#container-div-z").click(function() {
     $("[selected=selected]").attr("selected","")
         .attr("src","http://localhost/link_black.png");
 
@@ -40,7 +40,7 @@ window.onload = function() {
 }
 
 function iResize() {
-  var sizeInt = parseInt(document.getElementById('injected-text').offsetHeight, 10) + 50;
+  var sizeInt = document.getElementById('injected-text').offsetHeight;
 
   document.getElementById('annotations-div').height = sizeInt + 'px';
   document.getElementById('annotations-div').style.height = sizeInt + 'px';
@@ -49,6 +49,10 @@ function iResize() {
 function focusText(img) {
   var startOffset = img.getAttribute('startOffset');
   var endOffset = img.getAttribute('endOffset');
+  focusTextOffsets(startOffset, endOffset);
+}
+
+function focusTextOffsets(startOffset, endOffset) {
   var injectedText = document.getElementById('injected-text');
 
   if (window.getSelection && document.createRange) {
