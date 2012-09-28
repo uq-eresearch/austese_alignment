@@ -18,13 +18,29 @@ window.onload = function() {
       setTimeout(iResize, 50);
   });
 
-  $("#container-div-2").scroll(function () { 
+  $("#container-div-2").scroll(function() { 
       $("#container-div-1").scrollTop($("#container-div-2").scrollTop());
+  });
+
+  $("#container-div-1").click(function() {
+    $("[selected=selected]").attr("selected","")
+        .attr("src","http://localhost/link_black.png");
+
+    parent.window.clearObjectUrl();
+    parent.window.clearSelectedImage();
+  });
+
+  $("#container-div-2").click(function() {
+    $("[selected=selected]").attr("selected","")
+        .attr("src","http://localhost/link_black.png");
+
+    parent.window.clearObjectUrl();
+    parent.window.clearSelectedImage();
   });
 }
 
 function iResize() {
-  var sizeInt = document.getElementById('injected-text').offsetHeight;
+  var sizeInt = parseInt(document.getElementById('injected-text').offsetHeight, 10) + 50;
 
   document.getElementById('annotations-div').height = sizeInt + 'px';
   document.getElementById('annotations-div').style.height = sizeInt + 'px';
@@ -52,16 +68,19 @@ function focusText(img) {
   }
 }
 
-function highlightImage(img) {
+function highlightImage(img, sync) {
   if (img.getAttribute('selected') != 'selected') {
     $("[selected=selected]").attr("selected","")
       .attr("src","http://localhost/link_black.png");
     img.src = 'http://localhost/link_yellow.png';
     img.setAttribute('selected','selected');
-    parent.window.setObjectUrl(img.getAttribute("objectUrl"));
-    parent.window.setSelectedImage(img.getAttribute("objectUrl"));
 
     focusText(img);
+
+    if (sync == true) {
+      parent.window.setObjectUrl(img.getAttribute("objectUrl"));
+      parent.window.setSelectedImage(img.getAttribute("objectUrl"));
+    }
   }
 }
 
@@ -71,6 +90,8 @@ function setSelectedText(objectUrl) {
   var img = $("[objectUrl=" + objectUrl + "]")[0];
   img.setAttribute("selected","selected");
   img.setAttribute("src","http://localhost/link_yellow.png");
+  img.scrollIntoView(true);
+  $("#container-div-2").scrollTop($("#container-div-1").scrollTop());
 
   focusText(img);
 }

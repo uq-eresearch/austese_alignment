@@ -17,12 +17,12 @@
   <tr>
     <td>
       <div class="navbar-search pull-left">
-        <input id="image-search" type="text" class="search-query" placeholder="Search" style="width:490px; margin: 0px;" /><button style="margin: 0px 0px 0px 4px;" onclick="updateImageReader();" class="btn"><i class="icon-search"></i></button>
+        <input id="image-search" type="text" class="search-query" placeholder="Search" style="width:490px; margin: 0px;" /><button style="margin: 0px 0px 0px 4px;" onclick="updateImageReader();" class="btn" id="image-search-button"><i class="icon-search"></i></button>
       </div>
     </td>
     <td>
       <div class="navbar-search pull-left">
-        <input id="text-search" type="text" class="search-query" placeholder="Search" style="width:490px; margin: 0px;" /><button style="margin: 0px 0px 0px 4px;" onclick="updateTextField()"  type="submit" class="btn"><i class="icon-search"></i></button>
+        <input id="text-search" type="text" class="search-query" placeholder="Search" style="width:490px; margin: 0px;" /><button style="margin: 0px 0px 0px 4px;" onclick="updateTextReader();"  type="submit" class="btn" id="text-search-button"><i class="icon-search"></i></button>
       </div>
     </td>
   </tr>
@@ -37,7 +37,7 @@
   <tr id="viewRow">
     <td colspan="2">
       <div class="form-actions form-wrapper" id="edit-actions">
-        <a href="javascript:void(0);" onclick="addAlignment(); return false;"><i class="icon-plus"></i> Add New</a><br /><a href="javascript:void(0);" onclick="editAlignment(); return false;"><i class="icon-wrench"></i> Edit Existing</a>
+        <a href="javascript:void(0);" onclick="addAlignment(); return false;"><i class="icon-plus"></i> Add New</a><br /><a href="javascript:void(0);" onclick="editAlignment(); return false;"><i class="icon-wrench"></i> Edit Existing</a><br /><a href="javascript:void(0);" onclick="deleteAlignment(); return false;"><i class="icon-remove"></i> Delete Existing</a>
       </div>
     </td>
   </tr>

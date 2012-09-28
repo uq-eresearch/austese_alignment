@@ -121,7 +121,7 @@ function selectionVisible() {
   return !(areaSelect.getSelection().width == 0 && areaSelect.getSelection().height == 0);
 }
 
-function focusImageSelection(img) {
+function focusImageSelection(img, sync) {
   if (img.getAttribute('selected') != 'selected') {
     $("[selected=selected]").attr("selected","")
       .css("background-color","rgb(127,127,0)")
@@ -129,8 +129,11 @@ function focusImageSelection(img) {
     img.style.border = '3px dotted purple';
     img.style.backgroundColor = 'rgb(127,0,127)';
     img.setAttribute('selected','selected');
-    parent.window.setObjectUrl(img.getAttribute("objectUrl"));
-    parent.window.setSelectedText(img.getAttribute("objectUrl"));
+
+    if (sync == true) {
+      parent.window.setObjectUrl(img.getAttribute("objectUrl"));
+      parent.window.setSelectedText(img.getAttribute("objectUrl"));
+    }
   }
 }
 
