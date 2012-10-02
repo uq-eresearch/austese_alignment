@@ -21,22 +21,34 @@ window.onload = function() {
   $("#container-div-2").scroll(function() { 
       $("#container-div-1").scrollTop($("#container-div-2").scrollTop());
   });
+ 
+  if (getUrlVars()["editable"] == 'true') {
+    $("#container-div-1").click(function() {
+      $("[selected=selected]").attr("selected","")
+          .attr("src","http://localhost/link_black.png");
+    });
+ 
+    $("#container-div-2").click(function() {
+      $("[selected=selected]").attr("selected","")
+          .attr("src","http://localhost/link_black.png");
+    });
+  } else {
+    $("#container-div-1").click(function() {
+      $("[selected=selected]").attr("selected","")
+          .attr("src","http://localhost/link_black.png");
 
-  $("#container-div-1").click(function() {
-    $("[selected=selected]").attr("selected","")
-        .attr("src","http://localhost/link_black.png");
+      parent.window.clearObjectUrl();
+      parent.window.clearSelectedImage();
+    });
 
-    parent.window.clearObjectUrl();
-    parent.window.clearSelectedImage();
-  });
+    $("#container-div-2").click(function() {
+      $("[selected=selected]").attr("selected","")
+          .attr("src","http://localhost/link_black.png");
 
-  $("#container-div-2").click(function() {
-    $("[selected=selected]").attr("selected","")
-        .attr("src","http://localhost/link_black.png");
-
-    parent.window.clearObjectUrl();
-    parent.window.clearSelectedImage();
-  });
+      parent.window.clearObjectUrl();
+      parent.window.clearSelectedImage();
+    });
+  }
 }
 
 function iResize() {
@@ -110,7 +122,7 @@ function highlightImage(img, sync) {
 
     focusText(img);
 
-    if (sync == true) {
+    if (getUrlVars()["editable"] != 'true') {
       parent.window.setObjectUrl(img.getAttribute("objectUrl"));
       parent.window.setSelectedImage(img.getAttribute("objectUrl"));
     }
