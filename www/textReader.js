@@ -40,7 +40,7 @@ window.onload = function() {
 }
 
 function iResize() {
-  var sizeInt = document.getElementById('injected-text').offsetHeight;
+  var sizeInt = parseInt(document.getElementById('injected-text').offsetHeight, 10) + 50;
 
   document.getElementById('annotations-div').height = sizeInt + 'px';
   document.getElementById('annotations-div').style.height = sizeInt + 'px';
@@ -48,8 +48,37 @@ function iResize() {
 
 function focusText(img) {
   var startOffset = img.getAttribute('startOffset');
+  var startOffsetXpath = img.getAttribute('startOffsetXpath');
   var endOffset = img.getAttribute('endOffset');
-  focusTextOffsets(startOffset, endOffset);
+  var endOffsetXpath = img.getAttribute('endOffsetXpath');
+  
+  focusTextOffsetsWithXPaths(startOffset, startOffsetXpath, endOffset, endOffsetXpath);
+}
+
+function focusTextOffsetsWithXPaths(startOffset, startOffsetXpath, endOffset, endOffsetXpath) {
+  var injectedText = document.getElementById('injected-text');
+
+  if (window.getSelection && document.createRange) {
+    var sel = window.getSelection();
+    var range = document.createRange();
+    range.selectNodeContents(injectedText);
+    range.setStart(lookupElementByXPath(startOffsetXpath), startOffset);
+    range.setEnd(lookupElementByXPath(endOffsetXpath), endOffset);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } else if (document.selection && document.body.createTextRange) {
+    var textRange = document.body.createTextRange();
+    textRange.moveToElementText(injectedText);
+    textRange.setStart(lookupElementByXPath(startOffsetXpath), startOffset);
+    textRange.setEnd(lookupElementByXPath(endOffsetXpath), endOffset);
+    textRange.select();
+  }
+}
+
+function lookupElementByXPath(path) { 
+  var evaluator = new XPathEvaluator(); 
+  var result = evaluator.evaluate(path, document.documentElement, null,XPathResult.FIRST_ORDERED_NODE_TYPE, null); 
+  return  result.singleNodeValue; 
 }
 
 function focusTextOffsets(startOffset, endOffset) {
