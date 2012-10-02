@@ -126,7 +126,7 @@ function focusImageSelection(img, sync) {
     $("[selected=selected]").attr("selected","")
       .css("background-color","rgb(127,127,0)")
       .css("border","3px solid yellow");
-    img.style.border = '3px dotted purple';
+    img.style.border = '3px solid rgb(255,0,255)';
     img.style.backgroundColor = 'rgb(127,0,127)';
     img.setAttribute('selected','selected');
 
@@ -143,7 +143,7 @@ function setSelectedImage(objectUrl) {
     .css("border","3px solid yellow");
   
   var img = $("[objectUrl='" + objectUrl + "']")[0];
-  img.style.border = '3px dotted purple';
+  img.style.border = '3px solid rgb(255,0,255)';
   img.style.backgroundColor = 'rgb(127,0,127)';
   img.setAttribute('selected','selected');
 }

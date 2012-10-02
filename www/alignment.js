@@ -471,7 +471,12 @@
     var allNodes = document.getElementsByTagName('*');
     var segs = [];
     if (elm.nodeType == 3) {
-      segs.unshift('text()'); 
+      for (i = 1, sib = elm.previousSibling; sib; sib = sib.previousSibling) { 
+        if (sib.nodeType == 3)  {
+           i++;
+        } 
+      }; 
+      segs.unshift('/text()[' + i +']'); 
       elm = elm.parentNode;
     } 
     while (elm && elm.nodeType == 1) {

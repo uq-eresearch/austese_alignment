@@ -135,8 +135,11 @@ function setSelectedText(objectUrl) {
   var img = $("[objectUrl=" + objectUrl + "]")[0];
   img.setAttribute("selected","selected");
   img.setAttribute("src","http://localhost/link_yellow.png");
+
   img.scrollIntoView(true);
+
   $("#container-div-2").scrollTop($("#container-div-1").scrollTop());
+  $("#container-div-1").scrollTop($("#container-div-2").scrollTop());
 
   focusText(img);
 }
