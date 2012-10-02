@@ -30,7 +30,7 @@ window.onload = function() {
     parent.window.clearSelectedImage();
   });
 
-  $("#container-div-z").click(function() {
+  $("#container-div-2").click(function() {
     $("[selected=selected]").attr("selected","")
         .attr("src","http://localhost/link_black.png");
 
