@@ -1,6 +1,13 @@
+  var username = '';
+  var password = '';
+  var placeholderFunction;
+
   // Refresh the text and image iframe with annotations
   // READ MODE
   function refreshAnnotations(imageUrl, textUrl) {
+    var imageUrl = qualifyURL(imageUrl);
+    var textUrl = qualifyURL(textUrl);
+
     document.getElementById('text-input').onload = function(e) {             
       document.getElementById('image-input').onload = function(e) { 
         // Remove onload functions
@@ -10,20 +17,27 @@
       }
 
       document.getElementById('image-search').value = imageUrl;
-      document.getElementById('image-input').src = "http://localhost/imageReader.html?ui=embed&url=" + encodeURIComponent(imageUrl);
+      document.getElementById('image-input').src = "/alignment/imageReader.html?ui=embed&url=" + encodeURIComponent(imageUrl);
       document.getElementById('imageUrl').value = imageUrl;
     }
 
     document.getElementById('text-search').value = textUrl;
-    document.getElementById('text-input').src = "http://localhost/textReader.html?ui=embed&url=" + encodeURIComponent(textUrl);
+    document.getElementById('text-input').src = "/alignment/textReader.html?ui=embed&url=" + encodeURIComponent(textUrl);
     document.getElementById('textUrl').value = textUrl;
   }
+
+  function qualifyURL(url) {
+    var a = document.createElement('a');
+    a.href = url;
+    return a.href;
+  }
+
 
   // Load annotations for a given image and text
   // READ MODE
   function loadAnnotations(imageUrl, textUrl) {
     jQuery.ajax({
-      url: 'http://localhost/lorestore/oac/?annotates=' + imageUrl,
+      url: '/lorestore/oac/?annotates=' + imageUrl,
       type: 'GET',
       async: false,
       contentType: "application/rdf+xml",      
@@ -117,7 +131,6 @@
   // READ MODE
   function addImageAndText(annotationID, objectUrl, x, y, w, h, startOffset, startOffsetXpath, endOffset, endOffsetXpath, editable) {
     var image_iframe = document.getElementById('image-input');
-    var offset = parseInt(image_iframe.contentWindow.document.getElementById('offsetX').value, 10);
     var rectDiv = image_iframe.contentWindow.document.createElement("div");
     if (editable == true) {
       rectDiv.setAttribute('id','selectedImage');
@@ -137,9 +150,8 @@
     rectDiv.setAttribute('y', y);
     rectDiv.setAttribute('w', w);
     rectDiv.setAttribute('h', h);
-    rectDiv.setAttribute('style','position: absolute; overflow-x: hidden; overflow-y: hidden; z-index: 2; display: block; opacity:0.4; filter:alpha(opacity=40); background-color: rgb(127, 127, 0);  cursor:pointer; border: 3px solid yellow; left: ' + (x - 0 + offset) + 'px; top: ' + y + 'px; width: ' + (w - 4) + 'px; height: ' + (h - 4) + 'px;');
-    var bookReader = image_iframe.contentWindow.document.getElementById('BookReader');
-    bookReader.parentNode.appendChild(rectDiv);
+    rectDiv.setAttribute('style','position: absolute; overflow-x: hidden; overflow-y: hidden; z-index: 2; display: block; opacity:0.4; filter:alpha(opacity=40); background-color: rgb(127, 127, 0);  cursor:pointer; border: 3px solid yellow; left: ' + x + 'px; top: ' + y + 'px; width: ' + (w - 4) + 'px; height: ' + (h - 4) + 'px;');
+    image_iframe.contentWindow.document.getElementById('pagediv0').appendChild(rectDiv);
 
     var verticalOffset = 30;
     var text_iframe = document.getElementById('text-input');
@@ -206,7 +218,7 @@
     image.setAttribute('height', '16');
     image.setAttribute('width', '16');
     image.setAttribute('objectUrl',objectUrl);
-    image.setAttribute('src', 'http://localhost/link_black.png');
+    image.setAttribute('src', '/alignment/link_black.png');
     image.setAttribute('onclick', 'highlightImage(this); event.stopPropagation();');
     image.setAttribute('startOffset', startOffset);
     image.setAttribute('startOffsetXpath', startOffsetXpath);
@@ -236,7 +248,7 @@
     if (mode == READ_MODE) {
         refreshAnnotations(newImageUrl, document.getElementById('textUrl').value);
     } else {
-        document.getElementById('image-input').src = "http://localhost/imageReader.html?ui=embed&editable=true&url=" + encodeURIComponent(newImageUrl);
+        document.getElementById('image-input').src = "/alignment/imageReader.html?ui=embed&editable=true&url=" + encodeURIComponent(newImageUrl);
         document.getElementById('imageUrl').value = newImageUrl;
     }
   }
@@ -251,7 +263,7 @@
     if (mode == READ_MODE) {
       refreshAnnotations(document.getElementById('imageUrl').value, newTextUrl);
     } else {
-      document.getElementById('text-input').src = "http://localhost/textReader.html?ui=embed&editable=true&url=" + encodeURIComponent(newTextUrl);
+      document.getElementById('text-input').src = "/alignment/textReader.html?ui=embed&editable=true&url=" + encodeURIComponent(newTextUrl);
       document.getElementById('textUrl').value = newTextUrl;
     }
   }
@@ -326,7 +338,6 @@
       selectedImage.parentNode.removeChild(selectedImage);
     }
 
-    var offset = image_iframe.contentWindow.document.getElementById('offsetX').value;
     var x1 = image_iframe.contentWindow.document.getElementById('imageX1').value;
     var y1 = image_iframe.contentWindow.document.getElementById('imageY1').value;
     var x2 = image_iframe.contentWindow.document.getElementById('imageX2').value;
@@ -345,9 +356,8 @@
       var rectDiv = image_iframe.contentWindow.document.createElement("div");
       rectDiv.setAttribute('id','selectedImage');
       rectDiv.setAttribute('onclick','resetImage(' + x1 + ',' + y1 + ',' + x2 + ','+ y2 + ')');
-      rectDiv.setAttribute('style','position: absolute; overflow-x: hidden; overflow-y: hidden; z-index: 2; display: block; opacity:0.4; filter:alpha(opacity=40); background-color: rgb(127, 127, 0);  cursor:pointer; border: 3px solid yellow; left: ' + (parseInt(x1, 10) + parseInt(offset, 10)) + 'px; top: ' + y1 + 'px; width: ' + (parseInt(width, 10) - 4) + 'px; height: ' + (parseInt(height, 10) - 4) + 'px;');
-      var bookReader = image_iframe.contentWindow.document.getElementById('BookReader');
-      bookReader.parentNode.appendChild(rectDiv);
+      rectDiv.setAttribute('style','position: absolute; overflow-x: hidden; overflow-y: hidden; z-index: 2; display: block; opacity:0.4; filter:alpha(opacity=40); background-color: rgb(127, 127, 0);  cursor:pointer; border: 3px solid yellow; left: ' + x1 + 'px; top: ' + y1 + 'px; width: ' + (parseInt(width, 10) - 4) + 'px; height: ' + (parseInt(height, 10) - 4) + 'px;');
+      image_iframe.contentWindow.document.getElementById('pagediv0').appendChild(rectDiv);
     } else {
       document.getElementById('imageX').value = 0;
       document.getElementById('imageY').value = 0;
@@ -449,7 +459,7 @@
     image.setAttribute('style','position: absolute; left: 6px; top: ' + (verticalOffset - 10) + 'px; cursor: pointer;');
     image.setAttribute('height', '16');
     image.setAttribute('width', '16');
-    image.setAttribute('src', 'http://localhost/link_black.png');
+    image.setAttribute('src', '/alignment/link_black.png');
     image.setAttribute('onclick', 'highlightImage(this); event.stopPropagation();');
     image.setAttribute('startOffset', startOffset);
     image.setAttribute('startOffsetXpath', startOffsetXpath);
@@ -467,6 +477,7 @@
     }
   }
 
+  // Retrieve XPath for element
   function createXPathFromElement(elm) { 
     var allNodes = document.getElementsByTagName('*');
     var segs = [];
@@ -491,35 +502,77 @@
     return segs.length ? '/' + segs.join('/') : null; 
   }; 
 
+  // Retrieve element at XPath
   function lookupElementByXPath(path) { 
     var evaluator = new XPathEvaluator(); 
     var result = evaluator.evaluate(path, document.getElementById('text-input').contentWindow.document.documentElement, null,XPathResult.FIRST_ORDERED_NODE_TYPE, null);
     return result.singleNodeValue; 
   } 
 
-  function getCharOffsetRelativeTo(container, node, offset) {
-    var range = document.createRange();
-    range.selectNodeContents(container);
-    range.setEnd(node, offset);
-
-    return range.toString().length;
-  }
-
   // Login to lorestore
   // CREATE/EDIT MODE
+  function checkLogin() {
+    if (username == '' && password == '') {
+      var loginBox = $('#login-box').fadeIn(300);
+	
+      var popMargTop = (loginBox.height() + 24) / 2; 
+      var popMargLeft = (loginBox.width() + 24) / 2; 
+		
+      loginBox.css({ 
+        'margin-top' : -popMargTop,
+        'margin-left' : -popMargLeft
+      });
+		
+      $('body').append('<div id="mask"></div>');
+      $('#mask').fadeIn(300);
+		
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   function login() {
+    var j_username = $('input[name="j_username"]').attr('value');
+    var j_password = $('input[name="j_password"]').attr('value');
     jQuery.ajax({
-      url: 'http://localhost/lorestore/j_spring_security_check?j_password=adminpwd&j_username=admin&submit=',
+      url: '/lorestore/j_spring_security_check?j_password=' + j_password + '&j_username=' + j_username + '&submit=',
       type: 'POST',
-        async: false,
-        contentType: "application/rdf+xml",      
-        success: function(res) {
+      async: false,
+      contentType: "application/rdf+xml",
+      success: function(res) {
+         if (res.toString().indexOf("Incorrect") == -1) {
+           username = j_username;
+           password = j_password;
+           exitLogin();
+           placeholderFunction();
+         } else {
+           $('#login_error_message').css('display','inline');
+         }
       },
       error: function(xhr, testStatus, error){
-        console.log("Error occured: "+error+" "+xhr+" "+testStatus); 
-        return;
+         exitLogin();
       }
     });
+  }
+
+  function exitLogin() {
+      $('#mask , .login-popup').fadeOut(300 , function() {
+        $('#mask').remove();  
+      }); 
+      $('#login_error_message').css('display','none');
+      return false;
+  }
+
+  // Check the user is logged-in before submitting
+  // CREATE MODE
+  function confirmSubmit() {
+    if (!checkLogin()) {
+      placeholderFunction = submit;
+      return;
+    } else {
+      submit();
+    }
   }
 
   // Submit a new alignment
@@ -538,14 +591,12 @@
     var imageUrl = document.getElementById('imageUrl').value;
     var textUrl = document.getElementById('textUrl').value;
 
-    var createData = "<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:dc='http://purl.org/dc/elements/1.1/'     xmlns:oac='http://www.openannotation.org/ns/'><oac:Annotation rdf:about='http://localhost:8081/lorestore/oac/dummy'><rdf:type rdf:resource='http://austese.net/ns/annotation/Alignment'/><oac:hasTarget rdf:resource='" + imageUrl + "#xywh=" + x +"," + y +"," + width +"," + height +"'/><oac:hasTarget rdf:resource='" + textUrl + "#xpath=" + startOffsetXpath + "," + endOffsetXpath + "#char=" + startOffset + "," + endOffset + "'/><" + "/" + "oac:Annotation ><" + "/" + "rdf:RDF>";
-
-    login();
+    var createData = "<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:dc='http://purl.org/dc/elements/1.1/'     xmlns:oac='http://www.openannotation.org/ns/'><oac:Annotation rdf:about='/lorestore/oac/dummy'><rdf:type rdf:resource='http://austese.net/ns/annotation/Alignment'/><oac:hasTarget rdf:resource='" + imageUrl + "#xywh=" + x +"," + y +"," + width +"," + height +"'/><oac:hasTarget rdf:resource='" + textUrl + "#xpath=" + startOffsetXpath + "," + endOffsetXpath + "#char=" + startOffset + "," + endOffset + "'/><" + "/" + "oac:Annotation ><" + "/" + "rdf:RDF>";
 
     var objectUrl;
 
     jQuery.ajax({
-      url: 'http://localhost/lorestore/oac',
+      url: '/lorestore/oac',
       type: 'POST',
       data: createData,
       async: false,
@@ -568,7 +619,7 @@
       async: false,
       contentType: "application/rdf+xml",      
       success: function(res) {
-        console.log(res);
+        //console.log(res);
       },
       error: function(xhr, testStatus, error){
         console.log("Error occured: "+error+" "+xhr+" "+testStatus); 
@@ -579,6 +630,18 @@
     clearImageSelection();
     clearTextSelection();
     viewAlignment();
+  }
+
+
+  // Check the user is logged-in before updating
+  // CREATE MODE
+  function confirmUpdate() {
+    if (!checkLogin()) {
+      placeholderFunction = update;
+      return;
+    } else {
+      update();
+    }
   }
 
   // Update an existing alignment
@@ -598,8 +661,6 @@
     var textUrl = document.getElementById('textUrl').value;
 
     var objectUrl =  document.getElementById('objectUrl').value;
-
-    login();
 
     var updateData = '<?xml-stylesheet type="text/xsl" href="/lorestore/stylesheets/OAC.xsl"?><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="' + objectUrl + '" ><rdf:type rdf:resource="http://www.openannotation.org/ns/Annotation"/><rdf:type rdf:resource="http://austese.net/ns/annotation/Alignment"/><hasTarget xmlns="http://www.openannotation.org/ns/" rdf:resource="' + imageUrl + '#xywh=' + x +',' + y +',' + width +',' + height +'"/><hasTarget xmlns="http://www.openannotation.org/ns/" rdf:resource="' + textUrl + '#xpath=' + startOffsetXpath + ',' + endOffsetXpath + '#char=' + startOffset + ',' + endOffset + '"/><' + '/' + 'rdf:Description><rdf:Description rdf:about="' + textUrl + '#xpath=' + startOffsetXpath + ',' + endOffsetXpath + '#char=' + startOffset + ',' + endOffset + '"><isPartOf xmlns="http://purl.org/dc/terms/" rdf:resource="' + textUrl + '"' + '/' + '><' + '/' + 'rdf:Description><rdf:Description rdf:about="' + imageUrl + '#xywh=' + x +',' + y +',' + width +',' + height +'"><isPartOf xmlns="http://purl.org/dc/terms/" rdf:resource="' + imageUrl + '"/><' + '/' + 'rdf:Description><' + '/' + 'rdf:RDF>';
 
@@ -624,6 +685,23 @@
     viewAlignment();
   }
 
+  // Check the user has selected an alignment and is logged-in
+  // READ/EDIT MODE
+  function confirmDeleteAlignment() {
+    var objectUrl =  document.getElementById('objectUrl').value;
+    if (!objectUrl || objectUrl.length <= 0) {
+      return;
+    }
+    if (confirm("Are you sure you want to delete this?")) {
+      if (!checkLogin()) {
+        placeholderFunction = deleteAlignment;
+        return;
+      } else {
+        deleteAlignment();
+      }
+    }
+  }
+
   // Delete an existing alignment
   // READ/EDIT MODE
   function deleteAlignment() {
@@ -631,36 +709,32 @@
     if (!objectUrl || objectUrl.length <= 0) {
       return;
     }
-    if (confirm("Are you sure you want to delete this?")) {
 
-      login();
+    jQuery.ajax({
+      url: objectUrl,
+      type: 'DELETE',
+      async: false,
+      contentType: "application/rdf+xml",      
+      success: function(res) {
+        console.log(res);
+      },
+      error: function(xhr, testStatus, error){
+        console.log("Error occured: "+error+" "+xhr+" "+testStatus); 
+        return;
+      }
+    });
 
-      jQuery.ajax({
-        url: objectUrl,
-        type: 'DELETE',
-        async: false,
-        contentType: "application/rdf+xml",      
-        success: function(res) {
-          console.log(res);
-        },
-        error: function(xhr, testStatus, error){
-          console.log("Error occured: "+error+" "+xhr+" "+testStatus); 
-          return;
-        }
-      });
-
-      clearImageSelection();
-      clearTextSelection();
-      viewAlignment();
-    }
+    clearImageSelection();
+    clearTextSelection();
+    viewAlignment();
   }
-  
+
   // Update view for CREATE MODE
   function addAlignment() {
     mode = CREATE_MODE;
       
-    document.getElementById('image-input').src = "http://localhost/imageReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('imageUrl').value);
-    document.getElementById('text-input').src = "http://localhost/textReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('textUrl').value);
+    document.getElementById('image-input').src = "/alignment/imageReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('imageUrl').value);
+    document.getElementById('text-input').src = "/alignment/textReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('textUrl').value);
     document.getElementById('createNewRow').style.display = 'table-row';
     document.getElementById('editRow').style.display = 'none';
     document.getElementById('selectionRow').style.display = 'table-row';
@@ -721,9 +795,9 @@
         document.getElementById('image-input').onload = function() {}
         document.getElementById('text-input').onload = function() {}
       }
-      document.getElementById('image-input').src = "http://localhost/imageReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('imageUrl').value);
+      document.getElementById('image-input').src = "/alignment/imageReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('imageUrl').value);
     }
-    document.getElementById('text-input').src = "http://localhost/textReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('textUrl').value);
+    document.getElementById('text-input').src = "/alignment/textReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('textUrl').value);
 
     document.getElementById('createNewRow').style.display = 'none';
     document.getElementById('editRow').style.display = 'table-row';

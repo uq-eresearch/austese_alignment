@@ -1,5 +1,5 @@
 <script src="http://code.jquery.com/jquery-latest.js"></script>
-<script src="/alignment.js"></script>
+<script src="/alignment/alignment.js"></script>
 <script>
   var READ_MODE = 0;
   var CREATE_MODE = 1;
@@ -7,12 +7,14 @@
   var mode = READ_MODE;
 
   window.onload = function(e){ 
-    var defaultImage = 'http://www.archive.org/download/BookReader/img/page001.jpg';
-    var defaultText = 'http://localhost/textinput.html';
+    var defaultImage = '/alignment/page001.jpg';
+    var defaultText = '/alignment/textinput.html';
     refreshAnnotations(defaultImage, defaultText);
   }
 
 </script>
+<link rel="stylesheet" type="text/css" href="/alignment/alignment.css" />
+<div class="login-popup" id="login-box" style="width:220px"><p>Lorestore login required<a class="close" href="#" onclick="exitLogin()"><i class="icon-remove"></i></a></p><form action="/lorestore/j_spring_security_check" class="signin" method="post" style="margin: 0px" onsubmit="return false;" name="loginform><fieldset class="textbox"><input type="text" placeholder="Username" name="j_username" id="j_username" style="width:212px"/><input type="password" placeholder="Password" name="j_password" id="j_password" style="width:212px; margin-bottom: 4px;" /><p id='login_error_message' style='color: red; display: none;'>Invalid username or password.</p><button type="button" style="width:105px; margin-top: 4px; margin-right: 5px;" onclick="login()">Login</button><button type="button" style="width:105px; margin-top: 4px; margin-left: 5px;" onclick="exitLogin()">Cancel</button></fieldset></form></div>
 <table width="1140px" cellpadding="10" style="margin-left: auto; margin-right: auto;">
   <tr>
     <td>
@@ -28,16 +30,16 @@
   </tr>
   <tr>
     <td width="50%" height="600px">
-      <iframe id="image-input" src="http://localhost/imageReader.html?ui=embed" width="100%" height="100%"></iframe>
+      <iframe id="image-input" src="/alignment/imageReader.html?ui=embed" width="100%" height="100%"></iframe>
     </td>
     <td width="50%" height="600px">
-      <iframe id="text-input" src="http://localhost/textReader.html" width="100%" height="100%" style="overflow:hidden" scrolling="no"></iframe>
+      <iframe id="text-input" src="/alignment/textReader.html" width="100%" height="100%" style="overflow:hidden" scrolling="no"></iframe>
     </td>
   </tr>  
   <tr id="viewRow">
     <td colspan="2">
       <div class="form-actions form-wrapper" id="edit-actions">
-        <a href="javascript:void(0);" onclick="addAlignment(); return false;"><i class="icon-plus"></i> Add New</a><br /><a href="javascript:void(0);" onclick="editAlignment(); return false;"><i class="icon-wrench"></i> Edit Existing</a><br /><a href="javascript:void(0);" onclick="deleteAlignment(); return false;"><i class="icon-remove"></i> Delete Existing</a>
+        <a href="javascript:void(0);" onclick="addAlignment(); return false;"><i class="icon-plus"></i> Add New</a><br /><a href="javascript:void(0);" onclick="editAlignment(); return false;"><i class="icon-wrench"></i> Edit Existing</a><br /><a href="javascript:void(0);" onclick="confirmDeleteAlignment(); return false;"><i class="icon-remove"></i> Delete Existing</a>
       </div>
     </td>
   </tr>
@@ -84,14 +86,14 @@
   <tr id="createNewRow" style="display:none">
     <td colspan="2">
       <div class="form-actions form-wrapper" id="edit-actions">
-        <button class="btn btn-primary form-submit" id="new-submit" name="op" value="Save" onclick="submit()">Save</button> <button class="btn form-submit" id="new-cancel" name="op" value="Cancel" onclick="viewAlignment();">Cancel</button>
+        <button class="btn btn-primary form-submit" id="new-submit" name="op" value="Save" onclick="confirmSubmit()">Save</button> <button class="btn form-submit" id="new-cancel" name="op" value="Cancel" onclick="viewAlignment();">Cancel</button>
       </div>
     </td>
   </tr>
   <tr id="editRow" style="display:none"> 
     <td colspan="2">
       <div class="form-actions form-wrapper" id="edit-actions">
-        <button class="btn btn-primary form-submit" id="edit-update" name="op" value="Update" onclick="update()">Update</button> <button class="btn btn-danger form-submit" id="edit-delete" name="op" value="Delete" onclick="deleteAlignment()">Delete</button> <button class="btn form-submit" id="edit-cancel" name="op" value="Cancel" onclick="viewAlignment()">Cancel</button> 
+        <button class="btn btn-primary form-submit" id="edit-update" name="op" value="Update" onclick="confirmUpdate()">Update</button> <button class="btn btn-danger form-submit" id="edit-delete" name="op" value="Delete" onclick="confirmDeleteAlignment()">Delete</button> <button class="btn form-submit" id="edit-cancel" name="op" value="Cancel" onclick="viewAlignment()">Cancel</button> 
          <input style="display:none" type="hidden" id="objectUrl" value=""/>
       </div>
     </td>

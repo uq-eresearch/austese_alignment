@@ -20,13 +20,10 @@ window.onload = function() {
   }
 
   br.getPageURI = function(index, reduce, rotate) {
-    var leafStr = '000';
-    var imgStr = (index+1).toString();
-    var re = new RegExp("0{"+imgStr.length+"}$");
     if(getUrlVars()["url"]) {
       var url = decodeURIComponent(getUrlVars()["url"]);
     } else {
-      var url = 'http://www.archive.org/download/BookReader/img/page'+leafStr.replace(re, imgStr) + '.jpg';
+      var url = '/alignment/page001.jpg';
     }
     return url;
   }
@@ -84,10 +81,8 @@ window.onload = function() {
   $('#textSrch').hide();
   $('#btnSrch').hide();
 
-  $('#offsetX').val(Math.round($('#pageID').offset().left));
-
   if (getUrlVars()["editable"] == 'true') {
-    areaSelect = $('#pageID').imgAreaSelect({
+    areaSelect = $('#pagediv0').children().imgAreaSelect({
       handles: true,
       instance: true,
       onSelectEnd: function(img, selection) {
@@ -101,7 +96,7 @@ window.onload = function() {
       }
     });  
   } else {
-    $('#pageID').click(function() {
+    $('#pagediv0').children().click(function() {
       $("[selected=selected]").attr("selected","")
         .css("background-color","rgb(127,127,0)")
         .css("border","3px solid yellow");
@@ -126,7 +121,7 @@ function focusImageSelection(img, sync) {
     $("[selected=selected]").attr("selected","")
       .css("background-color","rgb(127,127,0)")
       .css("border","3px solid yellow");
-    img.style.border = '3px solid rgb(255,0,255)';
+    img.style.border = '3px solid purple';
     img.style.backgroundColor = 'rgb(127,0,127)';
     img.setAttribute('selected','selected');
 
@@ -143,7 +138,7 @@ function setSelectedImage(objectUrl) {
     .css("border","3px solid yellow");
   
   var img = $("[objectUrl='" + objectUrl + "']")[0];
-  img.style.border = '3px solid rgb(255,0,255)';
+  img.style.border = '3px solid purple';
   img.style.backgroundColor = 'rgb(127,0,127)';
   img.setAttribute('selected','selected');
 }
