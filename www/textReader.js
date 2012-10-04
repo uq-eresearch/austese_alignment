@@ -136,8 +136,7 @@ function setSelectedText(objectUrl) {
   img.setAttribute("selected","selected");
   img.setAttribute("src","/alignment/link_yellow.png");
 
-  img.scrollIntoView(true);
-
+  $("#container-div-1").scrollTop(img.offsetTop - ($("#container-div-1")[0].offsetHeight / 4));
   $("#container-div-2").scrollTop($("#container-div-1").scrollTop());
   $("#container-div-1").scrollTop($("#container-div-2").scrollTop());
 
