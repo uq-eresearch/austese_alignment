@@ -142,6 +142,21 @@
 	<td></td>
 </tr>
 <tr>
+	<td>type</td>
+	<td>id=j_username</td>
+	<td>admin</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=j_password</td>
+	<td>adminpwd</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>clickAndWait</td>
 	<td>//button[@id='new-submit']</td>
 	<td></td>
@@ -212,7 +227,7 @@
 	<td></td>
 </tr>
 <tr>
-	<td>clickAndWait</td>
+	<td>click</td>
 	<td>//button[@id='edit-update']</td>
 	<td></td>
 </tr>
@@ -233,7 +248,7 @@
 </tr>
 <tr>
 	<td>clickAndWait</td>
-	<td>//a[@onclick='deleteAlignment(); return false;']</td>
+	<td>//a[@onclick='confirmDeleteAlignment(); return false;']</td>
 	<td></td>
 </tr>
 <tr>
