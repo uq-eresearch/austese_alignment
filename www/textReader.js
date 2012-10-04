@@ -14,35 +14,35 @@ window.onload = function() {
       url = '/alignment/textinput.html';
   }
 
-  $('#injected-text').load(url, function() {
+  jQuery('#injected-text').load(url, function() {
       setTimeout(iResize, 50);
   });
 
-  $("#container-div-2").scroll(function() { 
-      $("#container-div-1").scrollTop($("#container-div-2").scrollTop());
+  jQuery("#container-div-2").scroll(function() { 
+      jQuery("#container-div-1").scrollTop(jQuery("#container-div-2").scrollTop());
   });
  
   if (getUrlVars()["editable"] == 'true') {
-    $("#container-div-1").click(function() {
-      $("[selected=selected]").attr("selected","")
+    jQuery("#container-div-1").click(function() {
+      jQuery("[selected=selected]").attr("selected","")
           .attr("src","/alignment/link_black.png");
     });
  
-    $("#container-div-2").click(function() {
-      $("[selected=selected]").attr("selected","")
+    jQuery("#container-div-2").click(function() {
+      jQuery("[selected=selected]").attr("selected","")
           .attr("src","/alignment/link_black.png");
     });
   } else {
-    $("#container-div-1").click(function() {
-      $("[selected=selected]").attr("selected","")
+    jQuery("#container-div-1").click(function() {
+      jQuery("[selected=selected]").attr("selected","")
           .attr("src","/alignment/link_black.png");
 
       parent.window.clearObjectUrl();
       parent.window.clearSelectedImage();
     });
 
-    $("#container-div-2").click(function() {
-      $("[selected=selected]").attr("selected","")
+    jQuery("#container-div-2").click(function() {
+      jQuery("[selected=selected]").attr("selected","")
           .attr("src","/alignment/link_black.png");
 
       parent.window.clearObjectUrl();
@@ -115,7 +115,7 @@ function focusTextOffsets(startOffset, endOffset) {
 
 function highlightImage(img, sync) {
   if (img.getAttribute('selected') != 'selected') {
-    $("[selected=selected]").attr("selected","")
+    jQuery("[selected=selected]").attr("selected","")
       .attr("src","/alignment/link_black.png");
     img.src = '/alignment/link_yellow.png';
     img.setAttribute('selected','selected');
@@ -130,21 +130,21 @@ function highlightImage(img, sync) {
 }
 
 function setSelectedText(objectUrl) {
-  $("[selected=selected]").attr("selected","")
+  jQuery("[selected=selected]").attr("selected","")
       .attr("src","/alignment/link_black.png");
-  var img = $("[objectUrl=" + objectUrl + "]")[0];
+  var img = jQuery("[objectUrl=" + objectUrl + "]")[0];
   img.setAttribute("selected","selected");
   img.setAttribute("src","/alignment/link_yellow.png");
 
-  $("#container-div-1").scrollTop(img.offsetTop - ($("#container-div-1")[0].offsetHeight / 4));
-  $("#container-div-2").scrollTop($("#container-div-1").scrollTop());
-  $("#container-div-1").scrollTop($("#container-div-2").scrollTop());
+  jQuery("#container-div-1").scrollTop(img.offsetTop - (jQuery("#container-div-1")[0].offsetHeight / 4));
+  jQuery("#container-div-2").scrollTop(jQuery("#container-div-1").scrollTop());
+  jQuery("#container-div-1").scrollTop(jQuery("#container-div-2").scrollTop());
 
   focusText(img);
 }
 
 function clearSelectedText() {
-  $("[selected=selected]").attr("selected","")
+  jQuery("[selected=selected]").attr("selected","")
     .attr("src","/alignment/link_black.png");
 
   if (window.getSelection) {

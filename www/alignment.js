@@ -11,8 +11,10 @@
     document.getElementById('text-input').onload = function(e) {             
       document.getElementById('image-input').onload = function(e) { 
         // Remove onload functions
-        document.getElementById('image-input').onload = function(e) {};
-        document.getElementById('text-input').onload = function(e) {};
+            document.getElementById('image-input').onload = function(e) {
+            };
+            document.getElementById('text-input').onload = function(e) {
+            };
         loadAnnotations(imageUrl, textUrl);
       }
 
@@ -31,7 +33,6 @@
     a.href = url;
     return a.href;
   }
-
 
   // Load annotations for a given image and text
   // READ MODE
@@ -112,8 +113,7 @@
                   h = numbers[3];
                 }
               }
-              if(startOffset != -1 && startOffsetXpath != '' && endOffset != -1 && endOffsetXpath != '' 
-                    && x != -1 && y != -1 && w != -1 && h != -1) {
+                        if (startOffset != -1 && startOffsetXpath != '' && endOffset != -1 && endOffsetXpath != '' && x != -1 && y != -1 && w != -1 && h != -1) {
                 addImageAndText(annotationID, objectUrl, x, y, w, h, startOffset, startOffsetXpath, endOffset, endOffsetXpath, false);
               }
             }
@@ -121,7 +121,9 @@
         }
       },
       error: function(xhr, testStatus, error){
+	  if (console && console.log){
         console.log("Error occured: "+error+" "+xhr+" "+testStatus); 
+	  }
         return;
       }
     });
@@ -130,28 +132,38 @@
   // Add a given image and text annotation to the image and text iframe
   // READ MODE
   function addImageAndText(annotationID, objectUrl, x, y, w, h, startOffset, startOffsetXpath, endOffset, endOffsetXpath, editable) {
-    var image_iframe = document.getElementById('image-input');
-    var rectDiv = image_iframe.contentWindow.document.createElement("div");
-    if (editable == true) {
-      rectDiv.setAttribute('id','selectedImage');
-      rectDiv.setAttribute('onclick','resetImage(' + x + ',' + y + ',' + (parseInt(x, 10) + parseInt(w,10)) + ','+ (parseInt(y, 10) + parseInt(h,10)) + ')');
 
-      document.getElementById('imageX').value = x;
-      document.getElementById('imageY').value = y;
-      document.getElementById('imageW').value = w;
-      document.getElementById('imageH').value = h;
-      document.getElementById('image-selection').innerHTML = "Image Selection " + w + " x " + h + " px";
+    var rectDiv = jQuery(document.getElementById('image-input').contentWindow.document.createElement("div"));
+    try {
+    if (editable == true) {
+
+            rectDiv.attr('id', 'selectedImage').attr('onclick', 'resetImage(' + x + ',' + y + ',' + (parseInt(x, 10) + parseInt(w, 10)) + ',' + (parseInt(y, 10) + parseInt(h, 10)) + ')');
+
+            jQuery('#imageX').val(x);
+            jQuery('#imageY').val(y);
+            jQuery('#imageW').val(w);
+            jQuery('#imageH').val(h);
+            jQuery('#image-selection').html("Image Selection " + w + " x " + h + " px");
     } else {
-      rectDiv.setAttribute('id','Image_' + annotationID);
-      rectDiv.setAttribute('onclick' , 'focusImageSelection(this, true)');
-    }
-    rectDiv.setAttribute('objectUrl',objectUrl);
-    rectDiv.setAttribute('x', x);
-    rectDiv.setAttribute('y', y);
-    rectDiv.setAttribute('w', w);
-    rectDiv.setAttribute('h', h);
-    rectDiv.setAttribute('style','position: absolute; overflow-x: hidden; overflow-y: hidden; z-index: 2; display: block; opacity:0.4; filter:alpha(opacity=40); background-color: rgb(127, 127, 0);  cursor:pointer; border: 3px solid yellow; left: ' + x + 'px; top: ' + y + 'px; width: ' + (w - 4) + 'px; height: ' + (h - 4) + 'px;');
-    image_iframe.contentWindow.document.getElementById('pagediv0').appendChild(rectDiv);
+            rectDiv.attr('id', 'Image_' + annotationID).attr('onclick', 'focusImageSelection(this, true)');
+        }
+        rectDiv.attr('objectUrl', objectUrl).attr('x', x).attr('y', y).attr('w', w).attr('h', h).css({
+            'position' : 'absolute',
+            'overflow-x' : 'hidden',
+            'overflow-y' : 'hidden',
+            'z-index' : '2',
+            'display' : 'block',
+            'opacity' : '0.4',
+            'filter' : 'alpha(opacity=40)',
+            'background-color' : 'rgb(127, 127, 0)',
+            'cursor' : 'pointer',
+            'border' : '3px solid yellow',
+            'left' : (x + 'px'),
+            'top' : (y + 'px'),
+            'width' : (w - 4) + 'px',
+            'height' : (h - 4) + 'px'
+        });
+        rectDiv.appendTo(jQuery('#image-input').contents().find('#pagediv0'));
 
     var verticalOffset = 30;
     var text_iframe = document.getElementById('text-input');
@@ -206,14 +218,14 @@
       if (selectedText.toString().length > 60) {
         var beginsWith = selectedText.toString().substring(0, 30);
         var endsWith = selectedText.toString().substring(selectedText.toString().length - 20);
-        document.getElementById('text-selection').innerHTML = beginsWith + "..." + endsWith;
+          jQuery('#text-selection').html(beginsWith + "..." + endsWith);
       } else {
-        document.getElementById('text-selection').innerHTML = selectedText.toString();
+          jQuery('#text-selection').html(selectedText.toString());
       }
     } else {
       image.setAttribute('id','Text_' + annotationID);
     }
-    rectDiv.setAttribute('objectUrl',objectUrl);
+    rectDiv.attr('objectUrl',objectUrl);
     image.setAttribute('style','position: absolute; left: 6px; top: ' + (verticalOffset -10) + 'px; cursor: pointer;');
     image.setAttribute('height', '16');
     image.setAttribute('width', '16');
@@ -236,17 +248,22 @@
     } else if (text_iframe.contentWindow.document.selection) { 
       text_iframe.contentWindow.document.selection.empty();
     }
+    } catch (e) {
+        if (console && console.log) {
+            console.log("Error", e);
+        }
+    }
   }
   
   // Refresh the image reader with the images from the search bar
   // READ MODE
   function updateImageReader() {
-    var newImageUrl = document.getElementById('image-search').value;
+    var newImageUrl = jQuery('#image-search').val();
 
     clearImageSelection();
 
     if (mode == READ_MODE) {
-        refreshAnnotations(newImageUrl, document.getElementById('textUrl').value);
+        refreshAnnotations(newImageUrl, jQuery('#textUrl').val());
     } else {
         document.getElementById('image-input').src = "/alignment/imageReader.html?ui=embed&editable=true&url=" + encodeURIComponent(newImageUrl);
         document.getElementById('imageUrl').value = newImageUrl;
@@ -256,22 +273,22 @@
   // Refresh the text reader with the text from the search bar
   // READ MODE
   function updateTextReader() {
-    var newTextUrl = document.getElementById('text-search').value;
+    var newTextUrl = jQuery('#text-search').val();
           
     clearTextSelection();
 
     if (mode == READ_MODE) {
-      refreshAnnotations(document.getElementById('imageUrl').value, newTextUrl);
+        refreshAnnotations(jQuery('#imageUrl').val(), newTextUrl);
     } else {
       document.getElementById('text-input').src = "/alignment/textReader.html?ui=embed&editable=true&url=" + encodeURIComponent(newTextUrl);
-      document.getElementById('textUrl').value = newTextUrl;
+        jQuery('#textUrl').val(newTextUrl);
     }
   }
 
   // Set the objectUrl in memory
   // READ MODE
   function setObjectUrl(objectUrl) {
-    document.getElementById('objectUrl').value = objectUrl;
+    jQuery('#objectUrl').val(objectUrl);
   }
 
   // Set the selected text annotation in the text iframe
@@ -291,7 +308,7 @@
   // Clear the objectUrl in memory
   // READ MODE
   function clearObjectUrl() {
-    document.getElementById('objectUrl').value = '';
+    jQuery('#objectUrl').val('');
   }
 
   // Clear the selected text annotation in the text iframe
@@ -311,21 +328,21 @@
   // Clear the current selected image in memory
   // READ/CREATE/EDIT MODE
   function clearImageSelection() {
-    document.getElementById('imageX').value = 0;
-    document.getElementById('imageY').value = 0;
-    document.getElementById('imageW').value = 0;
-    document.getElementById('imageH').value = 0;
-    document.getElementById('image-selection').innerHTML = "No selection: alignment will default to entire image";
+    jQuery('#imageX').val(0);
+    jQuery('#imageY').val(0);
+    jQuery('#imageW').val(0);
+    jQuery('#imageH').val(0);
+    jQuery('#image-selection').html("No selection: alignment will default to entire image");
   }
 
   // Clear the current selected text link in memory
   // READ/CREATE/EDIT MODE
   function clearTextSelection() {
-    document.getElementById('textStartOffset').value = 0;
-    document.getElementById('startOffsetXpath').value = '';
-    document.getElementById('textEndOffset').value = 0;
-    document.getElementById('endOffsetXpath').value = '';
-    document.getElementById('text-selection').innerHTML = "No selection: alignment will default to entire text";
+    jQuery('#textStartOffset').val(0);
+    jQuery('#startOffsetXpath').val('');
+    jQuery('#textEndOffset').val(0);
+    jQuery('#endOffsetXpath').val('');
+    jQuery('#text-selection').html("No selection: alignment will default to entire text");
   }
 
   // Get the current selected image area in memory from the selected image in the image iframe
@@ -363,7 +380,7 @@
       document.getElementById('imageY').value = 0;
       document.getElementById('imageW').value = 0;
       document.getElementById('imageH').value = 0;
-      document.getElementById('image-selection').innerHTML = "No selection: alignment will default to entire image";
+        jQuery('#image-selection').html("No selection: alignment will default to entire image");
     }
   }
 
@@ -396,11 +413,11 @@
       document.getElementById('textEndOffset').value = 0;
       document.getElementById('endOffsetXpath').value = '';
 
-      document.getElementById('text-selection').innerHTML = "No selection: alignment will default to entire text"; 
+        jQuery('#text-selection').html("No selection: alignment will default to entire text");
       return;
     }
     
-    if ($(userSelection.anchorNode).parents().index($(text_iframe.contentWindow.document.getElementById('injected-text'))) == -1) {
+    if (jQuery(userSelection.anchorNode).parents().index(jQuery(text_iframe.contentWindow.document.getElementById('injected-text'))) == -1) {
       return;
     }
 
@@ -431,9 +448,9 @@
     if (selectedText.toString().length > 60) {
       var beginsWith = selectedText.toString().substring(0, 30);
       var endsWith = selectedText.toString().substring(selectedText.toString().length - 20);
-      document.getElementById('text-selection').innerHTML = beginsWith + "..." + endsWith;
+        jQuery('#text-selection').html(beginsWith + "..." + endsWith);
     } else {
-      document.getElementById('text-selection').innerHTML = selectedText.toString();
+        jQuery('#text-selection').html(selectedText.toString());
     }
 
     range.collapse(true);
@@ -513,7 +530,7 @@
   // CREATE/EDIT MODE
   function checkLogin() {
     if (username == '' && password == '') {
-      var loginBox = $('#login-box').fadeIn(300);
+        var loginBox = jQuery('#login-box').fadeIn(300);
 	
       var popMargTop = (loginBox.height() + 24) / 2; 
       var popMargLeft = (loginBox.width() + 24) / 2; 
@@ -523,8 +540,8 @@
         'margin-left' : -popMargLeft
       });
 		
-      $('body').append('<div id="mask"></div>');
-      $('#mask').fadeIn(300);
+        jQuery('body').append('<div id="mask"></div>');
+        jQuery('#mask').fadeIn(300);
 		
       return false;
     } else {
@@ -557,10 +574,10 @@
   }
 
   function exitLogin() {
-      $('#mask , .login-popup').fadeOut(300 , function() {
-        $('#mask').remove();  
+    jQuery('#mask , .login-popup').fadeOut(300, function() {
+        jQuery('#mask').remove();
       }); 
-      $('#login_error_message').css('display','none');
+    jQuery('#login_error_message').css('display', 'none');
       return false;
   }
 
@@ -605,7 +622,9 @@
               objectUrl = res.childNodes[1].childNodes[1].getAttribute('rdf:about');
       },
       error: function(xhr, testStatus, error){
+	  if (console && console.log){
               console.log("Error occured: "+error+" "+xhr+" "+testStatus); 
+	  }
               return;
       }
     });
@@ -622,7 +641,9 @@
         //console.log(res);
       },
       error: function(xhr, testStatus, error){
+	  if (console && console.log){
         console.log("Error occured: "+error+" "+xhr+" "+testStatus); 
+	  }
         return;
       }
     });
@@ -631,7 +652,6 @@
     clearTextSelection();
     viewAlignment();
   }
-
 
   // Check the user is logged-in before updating
   // CREATE MODE
@@ -664,7 +684,6 @@
 
     var updateData = '<?xml-stylesheet type="text/xsl" href="/lorestore/stylesheets/OAC.xsl"?><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="' + objectUrl + '" ><rdf:type rdf:resource="http://www.openannotation.org/ns/Annotation"/><rdf:type rdf:resource="http://austese.net/ns/annotation/Alignment"/><hasTarget xmlns="http://www.openannotation.org/ns/" rdf:resource="' + imageUrl + '#xywh=' + x +',' + y +',' + width +',' + height +'"/><hasTarget xmlns="http://www.openannotation.org/ns/" rdf:resource="' + textUrl + '#xpath=' + startOffsetXpath + ',' + endOffsetXpath + '#char=' + startOffset + ',' + endOffset + '"/><' + '/' + 'rdf:Description><rdf:Description rdf:about="' + textUrl + '#xpath=' + startOffsetXpath + ',' + endOffsetXpath + '#char=' + startOffset + ',' + endOffset + '"><isPartOf xmlns="http://purl.org/dc/terms/" rdf:resource="' + textUrl + '"' + '/' + '><' + '/' + 'rdf:Description><rdf:Description rdf:about="' + imageUrl + '#xywh=' + x +',' + y +',' + width +',' + height +'"><isPartOf xmlns="http://purl.org/dc/terms/" rdf:resource="' + imageUrl + '"/><' + '/' + 'rdf:Description><' + '/' + 'rdf:RDF>';
 
-    console.log(objectUrl);
     jQuery.ajax({
       url: objectUrl,
       type: 'PUT',
@@ -672,10 +691,14 @@
       async: false,
       contentType: "application/rdf+xml",      
       success: function(res) {
+	  if (console && console.log){
         console.log(res);
+	  }
       },
       error: function(xhr, testStatus, error){
+	  if (console && console.log){
         console.log("Error occured: "+error+" "+xhr+" "+testStatus); 
+	  }
         return;
       }
     });
@@ -716,10 +739,14 @@
       async: false,
       contentType: "application/rdf+xml",      
       success: function(res) {
+	  if (console && console.log){
         console.log(res);
+	  }
       },
       error: function(xhr, testStatus, error){
+	if(console && console.log){
         console.log("Error occured: "+error+" "+xhr+" "+testStatus); 
+	}
         return;
       }
     });
@@ -735,37 +762,37 @@
       
     document.getElementById('image-input').src = "/alignment/imageReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('imageUrl').value);
     document.getElementById('text-input').src = "/alignment/textReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('textUrl').value);
-    document.getElementById('createNewRow').style.display = 'table-row';
-    document.getElementById('editRow').style.display = 'none';
-    document.getElementById('selectionRow').style.display = 'table-row';
-    document.getElementById('viewRow').style.display = 'none';
+    jQuery('#createNewRow').css('display', 'table-row');
+    jQuery('#editRow').css('display', 'none');
+    jQuery('#selectionRow').css('display', 'table-row');
+    jQuery('#viewRow').css('display', 'none');
 
-    document.getElementById('image-search').setAttribute('disabled','disabled');
-    document.getElementById('text-search').setAttribute('disabled','disabled');
-    document.getElementById('image-search-button').setAttribute('disabled','disabled');
-    document.getElementById('text-search-button').setAttribute('disabled','disabled');
+    jQuery('#image-search').attr('disabled', 'disabled');
+    jQuery('#text-search').attr('disabled', 'disabled');
+    jQuery('#image-search-button').attr('disabled', 'disabled');
+    jQuery('#text-search-button').attr('disabled', 'disabled');
   }
 
   // Update view for READ MODE
   function viewAlignment() {
     mode = READ_MODE;
       
-    document.getElementById('createNewRow').style.display = 'none';
-    document.getElementById('editRow').style.display = 'none';
-    document.getElementById('selectionRow').style.display = 'none';
-    document.getElementById('viewRow').style.display = 'table-row';
+    jQuery('#createNewRow').css('display', 'none');
+    jQuery('#editRow').css('display', 'none');
+    jQuery('#selectionRow').css('display', 'none');
+    jQuery('#viewRow').css('display', 'table-row');
 
-    document.getElementById('image-search').removeAttribute('disabled');
-    document.getElementById('text-search').removeAttribute('disabled');
-    document.getElementById('image-search-button').removeAttribute('disabled');
-    document.getElementById('text-search-button').removeAttribute('disabled');
+    jQuery('#image-search').removeAttr('disabled');
+    jQuery('#text-search').removeAttr('disabled');
+    jQuery('#image-search-button').removeAttr('disabled');
+    jQuery('#text-search-button').removeAttr('disabled');
 
-    refreshAnnotations(document.getElementById('imageUrl').value, document.getElementById('textUrl').value);
+    refreshAnnotations(jQuery('#imageUrl').val(), jQuery('#textUrl').val());
   }
 
   // Update view for EDIT MODE
   function editAlignment() {
-    var objectUrl = document.getElementById('objectUrl').value;
+    var objectUrl = jQuery('#objectUrl').val();
     if (!objectUrl || objectUrl.length <= 0) {
       return;
     }
@@ -792,27 +819,28 @@
     document.getElementById('text-input').onload = function() {
       document.getElementById('image-input').onload = function() {
         addImageAndText(annotationID, objectUrl, x, y, w, h, startOffset, startOffsetXpath, endOffset, endOffsetXpath, true);
-        document.getElementById('image-input').onload = function() {}
-        document.getElementById('text-input').onload = function() {}
+            document.getElementById('image-input').onload = function() {
+            }
+            document.getElementById('text-input').onload = function() {
+            }
       }
       document.getElementById('image-input').src = "/alignment/imageReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('imageUrl').value);
     }
     document.getElementById('text-input').src = "/alignment/textReader.html?ui=embed&editable=true&url=" + encodeURIComponent(document.getElementById('textUrl').value);
 
-    document.getElementById('createNewRow').style.display = 'none';
-    document.getElementById('editRow').style.display = 'table-row';
-    document.getElementById('selectionRow').style.display = 'table-row';
-    document.getElementById('viewRow').style.display = 'none';
+    jQuery('#createNewRow').css('display','none');
+    jQuery('#editRow').css('display','table-row');
+    jQuery('#selectionRow').css('display','table-row');
+    jQuery('#viewRow').css('display','none');
 
-    document.getElementById('image-search').setAttribute('disabled','disabled');
-    document.getElementById('text-search').setAttribute('disabled','disabled');
-    document.getElementById('image-search-button').setAttribute('disabled','disabled');
-    document.getElementById('text-search-button').setAttribute('disabled','disabled');
+    jQuery('#image-search').attr('disabled','disabled');
+    jQuery('#text-search').attr('disabled','disabled');
+    jQuery('#image-search-button').attr('disabled','disabled');
+    jQuery('#text-search-button').attr('disabled','disabled');
   }
 
   // Clear the selected image annotation in the image iframe
   // TESTING
   function highlightText(startOffset, endOffset) {
-    var text_iframe = document.getElementById('text-input'); 
-    text_iframe.contentWindow.focusTextOffsets(startOffset, endOffset);
+    jQuery('#text-input').contentWindow.focusTextOffsets(startOffset, endOffset);
   }
