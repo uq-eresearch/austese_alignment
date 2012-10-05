@@ -1,6 +1,5 @@
-var username = '';
-var password = '';
 var placeholderFunction;
+var loggedIn = false;
 
 // Refresh the text and image iframe with annotations
 // READ MODE
@@ -529,25 +528,19 @@ function lookupElementByXPath(path) {
 
 // Login to lorestore
 // CREATE/EDIT MODE
-function checkLogin() {
-    if (username == '' && password == '') {
-        var loginBox = jQuery('#login-box').fadeIn(300);
+function showLogin() {
+    var loginBox = jQuery('#login-box').fadeIn(300);
 
-        var popMargTop = (loginBox.height() + 24) / 2;
-        var popMargLeft = (loginBox.width() + 24) / 2;
+    var popMargTop = (loginBox.height() + 24) / 2;
+    var popMargLeft = (loginBox.width() + 24) / 2;
 
-        loginBox.css({
-            'margin-top' : -popMargTop,
-            'margin-left' : -popMargLeft
-        });
+    loginBox.css({
+        'margin-top' : -popMargTop,
+        'margin-left' : -popMargLeft
+    });
 
-        jQuery('body').append('<div id="mask"></div>');
-        jQuery('#mask').fadeIn(300);
-
-        return false;
-    } else {
-        return true;
-    }
+    jQuery('body').append('<div id="mask"></div>');
+    jQuery('#mask').fadeIn(300);
 }
 
 function login() {
@@ -558,10 +551,11 @@ function login() {
         type : 'POST',
         async : false,
         contentType : "application/rdf+xml",
-        success : function(res) {
-            if (res.toString().indexOf("Incorrect") == -1) {
-                username = j_username;
-                password = j_password;
+        xhrFields: {
+            withCredentials: true
+        },
+        success : function(data, textStatus, jqXHR) { 
+            if (data.toString().indexOf("Incorrect") == -1) {
                 exitLogin();
                 placeholderFunction();
             } else {
@@ -580,17 +574,6 @@ function exitLogin() {
     });
     jQuery('#login_error_message').css('display', 'none');
     return false;
-}
-
-// Check the user is logged-in before submitting
-// CREATE MODE
-function confirmSubmit() {
-    if (!checkLogin()) {
-        placeholderFunction = submit;
-        return;
-    } else {
-        submit();
-    }
 }
 
 // Submit a new alignment
@@ -619,16 +602,28 @@ function submit() {
         data : createData,
         async : false,
         contentType : "application/rdf+xml",
+        xhrFields: {
+            withCredentials: true
+        },
         success : function(res) {
+            loggedIn = true;
             objectUrl = res.childNodes[1].childNodes[1].getAttribute('rdf:about');
         },
         error : function(xhr, testStatus, error) {
-            if (console && console.log) {
+            loggedIn = false;
+            if (xhr.status == 403) {
+                placeholderFunction = submit;
+                showLogin();
+            } else if (console && console.log) {
                 console.log("Error occured: " + error + " " + xhr + " " + testStatus);
             }
             return;
         }
     });
+
+    if (!loggedIn) {
+        return;
+    }
 
     var updateData = '<?xml-stylesheet type="text/xsl" href="/lorestore/stylesheets/OAC.xsl"?><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="' + objectUrl + '" ><rdf:type rdf:resource="http://www.openannotation.org/ns/Annotation"/><rdf:type rdf:resource="http://austese.net/ns/annotation/Alignment"/><hasTarget xmlns="http://www.openannotation.org/ns/" rdf:resource="' + imageUrl + '#xywh=' + x + ',' + y + ',' + width + ',' + height + '"/><hasTarget xmlns="http://www.openannotation.org/ns/" rdf:resource="' + textUrl + '#xpath=' + startOffsetXpath + ',' + endOffsetXpath + '#char=' + startOffset + ',' + endOffset + '"/><' + '/' + 'rdf:Description><rdf:Description rdf:about="' + textUrl + '#xpath=' + startOffsetXpath + ',' + endOffsetXpath + '#char=' + startOffset + ',' + endOffset + '"><isPartOf xmlns="http://purl.org/dc/terms/" rdf:resource="' + textUrl + '"' + '/' + '><' + '/' + 'rdf:Description><rdf:Description rdf:about="' + imageUrl + '#xywh=' + x + ',' + y + ',' + width + ',' + height + '"><isPartOf xmlns="http://purl.org/dc/terms/" rdf:resource="' + imageUrl + '"/><' + '/' + 'rdf:Description><' + '/' + 'rdf:RDF>';
 
@@ -638,8 +633,8 @@ function submit() {
         data : updateData,
         async : false,
         contentType : "application/rdf+xml",
-        success : function(res) {
-            //console.log(res);
+        xhrFields: {
+            withCredentials: true
         },
         error : function(xhr, testStatus, error) {
             if (console && console.log) {
@@ -652,17 +647,6 @@ function submit() {
     clearImageSelection();
     clearTextSelection();
     viewAlignment();
-}
-
-// Check the user is logged-in before updating
-// CREATE MODE
-function confirmUpdate() {
-    if (!checkLogin()) {
-        placeholderFunction = update;
-        return;
-    } else {
-        update();
-    }
 }
 
 // Update an existing alignment
@@ -691,18 +675,27 @@ function update() {
         data : updateData,
         async : false,
         contentType : "application/rdf+xml",
-        success : function(res) {
-            if (console && console.log) {
-                console.log(res);
-            }
+        xhrFields: {
+            withCredentials: true
+        },
+        success : function (res) {
+            loggedIn = true;
         },
         error : function(xhr, testStatus, error) {
-            if (console && console.log) {
+            loggedIn = false;
+            if (xhr.status == 403) {
+                placeholderFunction = update;
+                showLogin();
+            } else if (console && console.log) {
                 console.log("Error occured: " + error + " " + xhr + " " + testStatus);
             }
             return;
         }
     });
+
+    if (!loggedIn) {
+        return;
+    }
 
     clearImageSelection();
     clearTextSelection();
@@ -717,12 +710,7 @@ function confirmDeleteAlignment() {
         return;
     }
     if (confirm("Are you sure you want to delete this?")) {
-        if (!checkLogin()) {
-            placeholderFunction = deleteAlignment;
-            return;
-        } else {
-            deleteAlignment();
-        }
+        deleteAlignment();
     }
 }
 
@@ -739,18 +727,27 @@ function deleteAlignment() {
         type : 'DELETE',
         async : false,
         contentType : "application/rdf+xml",
+        xhrFields: {
+            withCredentials: true
+        },
         success : function(res) {
-            if (console && console.log) {
-                console.log(res);
-            }
+            loggedIn = true;
         },
         error : function(xhr, testStatus, error) {
-            if (console && console.log) {
+            loggedIn = false;
+            if (xhr.status == 403) {
+                placeholderFunction = deleteAlignment;
+                showLogin();
+            } else if (console && console.log) {
                 console.log("Error occured: " + error + " " + xhr + " " + testStatus);
             }
             return;
         }
     });
+
+    if (!loggedIn) {
+        return;
+    }
 
     clearImageSelection();
     clearTextSelection();
