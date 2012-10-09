@@ -1,0 +1,99 @@
+<?php
+
+/**
+ * @file
+ * Module file for text and image alignment module
+ */
+
+/**
+ * @defgroup alignment Text and image alignment
+ * @ingroup austese
+ * @{
+ * Text and Image alignment tool
+ *
+ */
+
+/**
+ * Implements hook_help().
+ *
+ */
+function alignment_help($path, $arg) {
+  switch ($path) {
+    case 'alignment/edit':
+      return t('Alignment tools');
+
+    case 'admin/help#alignment':
+      // Help text for the admin section, using the module name in the path.
+      return t('AustESE Alignment tools');
+  }
+}
+
+/**
+ * Implements hook_permission().
+ *
+ */
+function alignment_permission() {
+  return array(
+    'edit alignments' => array(
+      'title' => t('Edit Alignments'),
+      'description' => t('Allow users to create and edit alignments'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ *
+ *
+ * @see hook_menu()
+ * @see menu_example
+ */
+function alignment_menu() {
+  // by default any path after this is split and provided as args to alignment_view
+  $items['alignment/edit'] = array(
+    'title' => 'Alignment',
+    'page callback' => 'alignment_view',
+    'access arguments' => array('edit alignments'),
+    'type' => MENU_CALLBACK
+  );
+  return $items;
+}
+
+/**
+ * Constructs a descriptive page.
+ *
+ */
+function alignment_description() {
+  return array('#markup' => t('The austese alignment module'));
+}
+function alignment_view($left=null, $right=null) {
+  $module_path = drupal_get_path('module','alignment');
+  if ($left == null) {
+      // TODO dummy file
+    $left = '/' . $module_path . '/' . 'dummy.png';
+  } else {
+    // TODO : check fragment in case of fragment uri (support non-HTML5 browsers)
+    $left = '/content/resources/'.$left;
+  }
+  if ($right == null) {
+      // TODO dummy file
+    $right = 'dummy.txt';
+  } else {
+    // TODO : check fragment in case of fragment uri (support non-HTML5 browsers)
+    $right = '/content/resources/'.$right;
+  }
+  return theme('alignment_ui',array('left'=>$left, 'right'=>$right));
+
+}
+function alignment_theme(){
+ return array(
+    'alignment_ui' => array(
+       'template' => 'alignment_ui',
+       'variables' => array('left'=> null, 'right'=>null)
+     )
+ );
+}
+
+/**
+ * @} End of "defgroup alignment".
+ */
