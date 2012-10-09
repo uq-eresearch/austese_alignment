@@ -23,7 +23,8 @@ jQuery(document).ready(function() {
             if (getUrlVars()["url"]) {
                 var url = decodeURIComponent(getUrlVars()["url"]);
             } else {
-                var url = '/alignment/page001.jpg';
+                // TODO dummy file
+                var url = '/example/SILTS163.jpg';
             }
             return url;
         },

@@ -1,18 +1,8 @@
-<script src="http://code.jquery.com/jquery-latest.js"></script>
-<script src="/alignment/alignment.js"></script>
-<script>
-  var READ_MODE = 0;
-  var CREATE_MODE = 1;
-  var EDIT_MODE = 2;
-  var mode = READ_MODE;
+<?php
+$module_path = drupal_get_path('module', 'alignment');
+?>
 
-  window.onload = function(e){ 
-    var defaultImage = '/alignment/page001.jpg';
-    var defaultText = '/alignment/textinput.html';
-    refreshAnnotations(defaultImage, defaultText);
-  }
 
-</script>
 <link rel="stylesheet" type="text/css" href="/alignment/alignment.css" />
 <div class="login-popup" id="login-box" style="width:220px"><p>Lorestore login required<a class="close" href="#" onclick="exitLogin()"><i class="icon-remove"></i></a></p><form action="/lorestore/j_spring_security_check" class="signin" method="post" style="margin: 0px" onsubmit="return false;" name="loginform><fieldset class="textbox"><input type="text" placeholder="Username" name="j_username" id="j_username" style="width:212px"/><input type="password" placeholder="Password" name="j_password" id="j_password" style="width:212px; margin-bottom: 4px;" /><p id='login_error_message' style='color: red; display: none;'>Invalid username or password.</p><button type="button" style="width:105px; margin-top: 4px; margin-right: 5px;" onclick="login()">Login</button><button type="button" style="width:105px; margin-top: 4px; margin-left: 5px;" onclick="exitLogin()">Cancel</button></fieldset></form></div>
 <table width="1140px" cellpadding="10" style="margin-left: auto; margin-right: auto;">
@@ -30,10 +20,10 @@
   </tr>
   <tr>
     <td width="50%" height="600px">
-      <iframe id="image-input" src="/alignment/imageReader.html?ui=embed" width="100%" height="100%"></iframe>
+      <iframe id="image-input" src="about:blank" width="100%" height="100%"></iframe>
     </td>
     <td width="50%" height="600px">
-      <iframe id="text-input" src="/alignment/textReader.html" width="100%" height="100%" style="overflow:hidden" scrolling="no"></iframe>
+      <iframe id="text-input" src="about:blank" width="100%" height="100%" style="overflow:hidden" scrolling="no"></iframe>
     </td>
   </tr>  
   <tr id="viewRow">
@@ -99,3 +89,16 @@
     </td>
   </tr>
 </table>
+<script>
+  var READ_MODE = 0;
+  var CREATE_MODE = 1;
+  var EDIT_MODE = 2;
+  var mode = READ_MODE;
+
+  window.onload = function(e){ 
+    var defaultImage = '<?php print $left; ?>';
+    var defaultText = '<?php print $right; ?>';
+    refreshAnnotations(defaultImage, defaultText);
+  }
+
+</script>

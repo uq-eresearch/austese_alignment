@@ -11,6 +11,7 @@ window.onload = function() {
     if (getUrlVars()["url"]) {
         url = decodeURIComponent(getUrlVars()["url"]);
     } else {
+        // TODO dummy file
         url = '/alignment/textinput.html';
     }
 
