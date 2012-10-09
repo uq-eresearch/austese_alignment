@@ -21,12 +21,8 @@ jQuery(document).ready(function() {
         },
         getPageURI : function(index, reduce, rotate) {
             if (getUrlVars()["url"]) {
-                var url = decodeURIComponent(getUrlVars()["url"]);
-            } else {
-                // TODO dummy file
-                var url = '/example/SILTS163.jpg';
-            }
-            return url;
+                return decodeURIComponent(getUrlVars()["url"]);
+            } 
         },
         getPageSide : function(index) {
             if (0 == (index & 0x1)) {

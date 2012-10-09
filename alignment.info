@@ -3,7 +3,6 @@ description = Text and image alignment tools
 package = AustESE
 core = 7.x
 ; files[] = austese_align.test
-scripts[] = alignment.js
 stylesheets[all][]=alignment.css
 version = "7.x-1.x-dev"
 core = "7.x"

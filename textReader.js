@@ -1,3 +1,4 @@
+
 function getUrlVars() {
     var vars = {};
     var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
@@ -10,10 +11,7 @@ window.onload = function() {
     var url;
     if (getUrlVars()["url"]) {
         url = decodeURIComponent(getUrlVars()["url"]);
-    } else {
-        // TODO dummy file
-        url = '/alignment/textinput.html';
-    }
+    } 
 
     jQuery('#injected-text').load(url, function() {
         setTimeout(iResize, 50);
@@ -25,22 +23,22 @@ window.onload = function() {
 
     if (getUrlVars()["editable"] == 'true') {
         jQuery("#container-div-1").click(function() {
-            jQuery("[selected=selected]").attr("selected", "").attr("src", "/alignment/link_black.png");
+            jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
         });
 
         jQuery("#container-div-2").click(function() {
-            jQuery("[selected=selected]").attr("selected", "").attr("src", "/alignment/link_black.png");
+            jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
         });
     } else {
         jQuery("#container-div-1").click(function() {
-            jQuery("[selected=selected]").attr("selected", "").attr("src", "/alignment/link_black.png");
+            jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
 
             parent.window.clearObjectUrl();
             parent.window.clearSelectedImage();
         });
 
         jQuery("#container-div-2").click(function() {
-            jQuery("[selected=selected]").attr("selected", "").attr("src", "/alignment/link_black.png");
+            jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
 
             parent.window.clearObjectUrl();
             parent.window.clearSelectedImage();
@@ -111,8 +109,8 @@ function focusTextOffsets(startOffset, endOffset) {
 
 function highlightImage(img, sync) {
     if (img.getAttribute('selected') != 'selected') {
-        jQuery("[selected=selected]").attr("selected", "").attr("src", "/alignment/link_black.png");
-        img.src = '/alignment/link_yellow.png';
+        jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
+        img.src = 'resources/link_yellow.png';
         img.setAttribute('selected', 'selected');
 
         focusText(img);
@@ -125,10 +123,10 @@ function highlightImage(img, sync) {
 }
 
 function setSelectedText(objectUrl) {
-    jQuery("[selected=selected]").attr("selected", "").attr("src", "/alignment/link_black.png");
+    jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
     var img = jQuery("[objectUrl=" + objectUrl + "]")[0];
     img.setAttribute("selected", "selected");
-    img.setAttribute("src", "/alignment/link_yellow.png");
+    img.setAttribute("src", "resources/link_yellow.png");
 
     jQuery("#container-div-1").scrollTop(img.offsetTop - (jQuery("#container-div-1")[0].offsetHeight / 4));
     jQuery("#container-div-2").scrollTop(jQuery("#container-div-1").scrollTop());
@@ -138,7 +136,7 @@ function setSelectedText(objectUrl) {
 }
 
 function clearSelectedText() {
-    jQuery("[selected=selected]").attr("selected", "").attr("src", "/alignment/link_black.png");
+    jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
 
     if (window.getSelection) {
         if (window.getSelection().empty) {

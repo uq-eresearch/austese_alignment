@@ -70,14 +70,14 @@ function alignment_view($left=null, $right=null) {
   $module_path = drupal_get_path('module','alignment');
   if ($left == null) {
       // TODO dummy file
-    $left = '/' . $module_path . '/' . 'dummy.png';
+    $left = '/' . $module_path . '/resources/' . 'dummy.png';
   } else {
     // TODO : check fragment in case of fragment uri (support non-HTML5 browsers)
     $left = '/content/resources/'.$left;
   }
   if ($right == null) {
       // TODO dummy file
-    $right = 'dummy.txt';
+    $right = '/' . $module_path . '/resources/' . 'dummy.txt';
   } else {
     // TODO : check fragment in case of fragment uri (support non-HTML5 browsers)
     $right = '/content/resources/'.$right;
