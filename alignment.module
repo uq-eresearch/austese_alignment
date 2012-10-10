@@ -35,7 +35,7 @@ function alignment_help($path, $arg) {
 function alignment_permission() {
   return array(
     'edit alignments' => array(
-      'title' => t('Edit Alignments'),
+      'title' => t('Edit Alignment'),
       'description' => t('Allow users to create and edit alignments'),
     ),
   );
@@ -51,7 +51,7 @@ function alignment_permission() {
 function alignment_menu() {
   // by default any path after this is split and provided as args to alignment_view
   $items['alignment/edit'] = array(
-    'title' => 'Alignment',
+    'title' => 'Edit Alignment',
     'page callback' => 'alignment_view',
     'access arguments' => array('edit alignments'),
     'type' => MENU_CALLBACK
