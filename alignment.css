@@ -32,7 +32,9 @@ form.signin {
 #login_error_message {
     color: red; display: none;
 }
-
+iframe {
+    border: 1px solid #eeeeee;
+}
 #mask {
 	display: none;
 	background: #000; 
