@@ -635,56 +635,99 @@
         return result.singleNodeValue;
     }
 
-    // Login to lorestore
-    // CREATE/EDIT MODE
-    function showLogin() {
-        var loginBox = jQuery('#login-box').fadeIn(300);
+function getCookie(c_name) {
+    if (document.cookie.length > 0) {
+        c_start = document.cookie.indexOf(c_name + "=");
+        if (c_start != -1) {
+            c_start = c_start + c_name.length + 1;
+            c_end = document.cookie.indexOf(";", c_start);
+            if (c_end == -1) c_end = document.cookie.length;
+            return unescape(document.cookie.substring(c_start, c_end));
+        }
+    }
+    return "";
+}
 
-        var popMargTop = (loginBox.height() + 24) / 2;
-        var popMargLeft = (loginBox.width() + 24) / 2;
+// Attempt to login with open-id
+// CREATE/EDIT MODE
+function attemptLogin() {
+    var openid_identifier = getCookie('Drupal.visitor.openid_identifier');
 
-        loginBox.css({
+    console.log(openid_identifier);
+
+    if (openid_identifier != null && openid_identifier.length > 0) { 
+        popupWindow = window.open('/lorestore/j_spring_openid_security_check?openid_identifier=' + encodeURIComponent(openid_identifier) + '&submit', 'openid_popup','width=400,height=200');
+
+
+        var waitingBox = jQuery('#login-waiting-box').fadeIn(300);
+
+        var popMargTop = (waitingBox.height() + 24) / 2;
+        var popMargLeft = (waitingBox.width() + 24) / 2;
+
+        waitingBox.css({
             'margin-top' : -popMargTop,
             'margin-left' : -popMargLeft
         });
 
         jQuery('body').append('<div id="mask"></div>');
         jQuery('#mask').fadeIn(300);
-    }
 
-    function login() {
-        var j_username = jQuery('input[name="j_username"]').attr('value');
-        var j_password = jQuery('input[name="j_password"]').attr('value');
-        jQuery.ajax({
-            url : '/lorestore/j_spring_security_check?j_password=' + j_password
-                    + '&j_username=' + j_username + '&submit=',
-            type : 'POST',
-            async : false,
-            contentType : "application/rdf+xml",
-            xhrFields : {
-                withCredentials : true
-            },
-            success : function(data, textStatus, jqXHR) {
-                if (data.toString().indexOf("Incorrect") == -1) {
-                    exitLogin();
-                    placeholderFunction();
-                } else {
-                    jQuery('#login_error_message').css('display', 'inline');
-                }
-            },
-            error : function(xhr, testStatus, error) {
+        waitUntilPopupLoggedIn();
+    } else {
+        showLogin();
+    }
+}
+
+// Login to lorestore
+// CREATE/EDIT MODE
+function showLogin() {
+    var loginBox = jQuery('#login-box').fadeIn(300);
+
+    var popMargTop = (loginBox.height() + 24) / 2;
+    var popMargLeft = (loginBox.width() + 24) / 2;
+
+    loginBox.css({
+        'margin-top' : -popMargTop,
+        'margin-left' : -popMargLeft
+    });
+
+    jQuery('body').append('<div id="mask"></div>');
+    jQuery('#mask').fadeIn(300);
+}
+
+function login() {
+    var openid_identifier = jQuery('input[name="openid_identifier"]').attr('value');
+    popupWindow = window.open('/lorestore/j_spring_openid_security_check?openid_identifier=' + encodeURIComponent(openid_identifier) + '&submit', 'openid_popup','width=900,height=600');
+
+    waitUntilPopupLoggedIn();
+}
+
+function waitUntilPopupLoggedIn() {
+    console.log(popupWindow);
+    if ((jQuery('.login-popup[style*=block]').length) > 0) {
+        if (popupWindow.length == 0) {
+            if (popupWindow && popupWindow.location && popupWindow.location.href 
+                    && (popupWindow.location.href).indexOf('loggedIn.html') != -1) {
+                popupWindow.close();
+                window.focus();
+                placeholderFunction();
                 exitLogin();
+            } else {
+                setTimeout(waitUntilPopupLoggedIn, 1000);
             }
-        });
+        } else {
+            setTimeout(waitUntilPopupLoggedIn, 1000);
+        }
     }
+}
 
-    function exitLogin() {
-        jQuery('#mask , .login-popup').fadeOut(300, function() {
-            jQuery('#mask').remove();
-        });
-        jQuery('#login_error_message').css('display', 'none');
-        return false;
-    }
+function exitLogin() {
+    jQuery('#mask , .login-popup').fadeOut(300, function() {
+        jQuery('#mask').remove();
+    });
+    jQuery('#login_error_message').css('display', 'none');
+    return false;
+}
 
     // Submit a new alignment
     // CREATE MODE
@@ -746,7 +789,7 @@
                 loggedIn = false;
                 if (xhr.status == 403) {
                     placeholderFunction = submit;
-                    showLogin();
+                    attemptLogin();
                 } else if (console && console.log) {
                     console.log("Error occured: " + error + " " + xhr + " "
                             + testStatus);
@@ -937,7 +980,7 @@
                 loggedIn = false;
                 if (xhr.status == 403) {
                     placeholderFunction = update;
-                    showLogin();
+                    attemptLogin();
                 } else if (console && console.log) {
                     console.log("Error occured: " + error + " " + xhr + " "
                             + testStatus);
@@ -990,7 +1033,7 @@
                 loggedIn = false;
                 if (xhr.status == 403) {
                     placeholderFunction = deleteAlignment;
-                    showLogin();
+                    attemptLogin();
                 } else if (console && console.log) {
                     console.log("Error occured: " + error + " " + xhr + " "
                             + testStatus);
@@ -1136,6 +1179,9 @@
             jQuery('#edit-update').on('click', update);
             jQuery('#edit-delete').on('click', confirmDeleteAlignment);
             jQuery('#edit-cancel').on('click', viewAlignment);
+            jQuery('#login-button').on('click', login);
+            jQuery('#login-popup-close').on('click', exitLogin);
+            jQuery('#login-waiting-popup-close').on('click', exitLogin);
         }
     );
 })();

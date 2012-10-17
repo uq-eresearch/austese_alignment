@@ -1,19 +1,24 @@
 <?php
 $module_path = drupal_get_path('module', 'alignment');
 ?>
-<div class="login-popup" id="login-box">
-    <p>Lorestore login required<a id="annoClose" class="close" href="#"><i class="icon-remove"></i> </a></p>
-    <form action="/lorestore/j_spring_security_check" class="signin"
-        method="post" onsubmit="return false;"
-        name="loginform">
-        <fieldset class="textbox">
-            <input type="text" placeholder="Username" name="j_username" id="j_username" /> 
-            <input type="password" placeholder="Password" name="j_password" id="j_password" />
-            <p id="login_error_message">Invalid username or password.</p>
-            <button id="annoLogin" type="button" class="btn">Login</button>
-            <button id="annoExitLogin" type="button" class="btn">Cancel</button>
-        </fieldset>
-    </form>
+<div class="login-popup" id="login-box" style="margin-top: -83px; margin-left: -122px; ">
+    <a id="login-popup-close" class="close" href="#" onclick="exitLogin()">
+        <i class="icon-remove"></i>
+    </a>
+    <label for="edit-openid-identifier" class="control-label">Log in using OpenID</label>
+    <div class="controls">
+        <input type="text" id="edit-openid-identifier" name="openid_identifier" value="" size="40" maxlength="255" class="form-text" />
+        <p class="help-block">
+            <a href="http://openid.net/" style="font-size: .8em;">What is OpenID?</a>
+            <button id="login-button" class="btn form-submit" id="edit-submit" name="op" value="Log in" style="float:right" onclick="login()">Log in</button>
+        </p>
+    </div>
+</div>
+<div class="login-popup" id="login-waiting-box" style="margin-top: -64px; margin-left: -64px; width: 128px; height: 128px;">
+    <a id="login-waiting-popup-close" class="close" href="#" onclick="exitLogin()" style="position:aboslute">
+        <i class="icon-remove"></i>
+    </a>
+    <img src="/<?php print $module_path; ?>/resources/loading.gif" style="position:absolute; z-index: -1;"/>
 </div>
 <div id="alignment-ui" data-module="<?php print $module_path; ?>" class="span12">
    <div class="row">
