@@ -344,40 +344,40 @@
 
     // Set the objectUrl in memory
     // READ MODE
-    function setObjectUrl(objectUrl) {
+    jQuery.fn.setObjectUrl = function(objectUrl) {
         jQuery('#objectUrl').val(objectUrl);
     }
 
     // Set the selected text annotation in the text iframe
     // READ MODE
-    function setSelectedText(objectUrl) {
+    jQuery.fn.setSelectedText = function(objectUrl) {
         var text_iframe = document.getElementById('text-input');
         text_iframe.contentWindow.setSelectedText(objectUrl);
     }
 
     // Set the selected image annotation in the image iframe
     // READ MODE
-    function setSelectedImage(objectUrl) {
+    jQuery.fn.setSelectedImage = function(objectUrl) {
         var image_iframe = document.getElementById('image-input');
         image_iframe.contentWindow.setSelectedImage(objectUrl);
     }
 
     // Clear the objectUrl in memory
     // READ MODE
-    function clearObjectUrl() {
+    jQuery.fn.clearObjectUrl = function() {
         jQuery('#objectUrl').val('');
     }
 
     // Clear the selected text annotation in the text iframe
     // READ MODE
-    function clearSelectedText() {
+    jQuery.fn.clearSelectedText = function() {
         var text_iframe = document.getElementById('text-input');
         text_iframe.contentWindow.clearSelectedText();
     }
 
     // Clear the selected image annotation in the image iframe
     // READ MODE
-    function clearSelectedImage() {
+    jQuery.fn.clearSelectedImage = function() {
         var image_iframe = document.getElementById('image-input');
         image_iframe.contentWindow.clearSelectedImage();
     }

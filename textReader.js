@@ -33,15 +33,15 @@ window.onload = function() {
         jQuery("#container-div-1").click(function() {
             jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
 
-            parent.window.clearObjectUrl();
-            parent.window.clearSelectedImage();
+            parent.window.jQuery.fn.clearObjectUrl();
+            parent.window.jQuery.fn.clearSelectedImage();
         });
 
         jQuery("#container-div-2").click(function() {
             jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
 
-            parent.window.clearObjectUrl();
-            parent.window.clearSelectedImage();
+            parent.window.jQuery.fn.clearObjectUrl();
+            parent.window.jQuery.fn.clearSelectedImage();
         });
     }
 }
@@ -116,8 +116,8 @@ function highlightImage(img, sync) {
         focusText(img);
 
         if (getUrlVars()["editable"] != 'true') {
-            parent.window.setObjectUrl(img.getAttribute("objectUrl"));
-            parent.window.setSelectedImage(img.getAttribute("objectUrl"));
+            parent.window.jQuery.fn.setObjectUrl(img.getAttribute("objectUrl"));
+            parent.window.jQuery.fn.setSelectedImage(img.getAttribute("objectUrl"));
         }
     }
 }

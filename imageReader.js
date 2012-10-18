@@ -91,8 +91,8 @@ jQuery(document).ready(function() {
     } else {
         jQuery('#pagediv0').children().click(function() {
             jQuery("[selected=selected]").attr("selected", "").css("background-color", "rgb(127,127,0)").css("border", "3px solid yellow");
-            parent.window.clearObjectUrl();
-            parent.window.clearSelectedText();
+            parent.window.jQuery.fn.clearObjectUrl();
+            parent.window.jQuery.fn.clearSelectedText();
         });
     }
 });
@@ -117,8 +117,8 @@ function focusImageSelection(img, sync) {
         img.setAttribute('selected', 'selected');
 
         if (sync == true) {
-            parent.window.setObjectUrl(img.getAttribute("objectUrl"));
-            parent.window.setSelectedText(img.getAttribute("objectUrl"));
+            parent.window.jQuery.fn.setObjectUrl(img.getAttribute("objectUrl"));
+            parent.window.jQuery.fn.setSelectedText(img.getAttribute("objectUrl"));
         }
     }
 }
