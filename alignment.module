@@ -68,8 +68,10 @@ function alignment_description() {
 }
 function alignment_view($left=null, $right=null) {
   $module_path = drupal_get_path('module','alignment');
+  drupal_add_js($module_path . '/alignment.js');
+  drupal_add_css($module_path . '/alignment.css');
   if ($left == null) {
-      // TODO dummy file
+    // TODO dummy file
     $left = '/' . $module_path . '/resources/' . 'dummy.png';
   } else {
     // TODO : check fragment in case of fragment uri (support non-HTML5 browsers)
