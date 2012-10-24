@@ -7,7 +7,7 @@ $module_path = drupal_get_path('module', 'alignment');
     </a>
     <label for="edit-openid-identifier" class="control-label">Log in using OpenID</label>
     <div class="controls">
-        <input type="text" id="edit-openid-identifier" name="openid_identifier" value="" size="40" maxlength="255" class="form-text" />
+        <input type="text" id="edit-openid-identifier" name="openid_identifier" value="https://www.google.com/accounts/o8/id" size="40" maxlength="255" class="form-text" />
         <p class="help-block">
             <a href="http://openid.net/" style="font-size: .8em;">What is OpenID?</a>
             <button id="login-button" class="btn form-submit" id="edit-submit" name="op" value="Log in" style="float:right" onclick="login()">Log in</button>
