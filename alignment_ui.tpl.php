@@ -32,7 +32,8 @@ $module_path = drupal_get_path('module', 'alignment');
             </div>
             <div class="row">
                 <iframe id="image-input"
-                src="about:blank" width="97%" height="550px"></iframe>
+                        src="about:blank" width="97%" height="550px"
+                        style="overflow: hidden" scrolling="no"></iframe>
             </div>
        </div>
        <div class="span6">
@@ -50,7 +51,7 @@ $module_path = drupal_get_path('module', 'alignment');
             </div>
        </div>
    </div>
-   
+   <br />
    <div class="row" id="viewRow">
        <div class="form-actions" id="edit-actions">
            <a id="addAlignmentLink" href="javascript:void(0);"><i class="icon-plus"></i> Add New</a><br />

@@ -46,10 +46,10 @@ window.onload = function() {
     }
 }
 function iResize() {
-    var sizeInt = parseInt(document.getElementById('injected-text').offsetHeight, 10) + 50;
+    var sizeInt = (jQuery('#injected-text').outerHeight() + 50);
 
-    document.getElementById('annotations-div').height = sizeInt + 'px';
-    document.getElementById('annotations-div').style.height = sizeInt + 'px';
+    jQuery('#annotations-div').height(sizeInt);
+    jQuery('#annotations-div').css('height', sizeInt);
 }
 
 function focusText(img) {
@@ -117,7 +117,7 @@ function highlightImage(img, sync) {
 
         if (getUrlVars()["editable"] != 'true') {
             parent.window.jQuery.fn.setObjectUrl(img.getAttribute("objectUrl"));
-            parent.window.jQuery.fn.setSelectedImage(img.getAttribute("objectUrl"));
+            parent.window.jQuery.fn.setSelectedImage(img.getAttribute("objectUrl"), img.getAttribute('index'));
         }
     }
 }
