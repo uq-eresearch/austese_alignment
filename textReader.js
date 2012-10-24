@@ -33,23 +33,23 @@ window.onload = function() {
         jQuery("#container-div-1").click(function() {
             jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
 
-            parent.window.clearObjectUrl();
-            parent.window.clearSelectedImage();
+            parent.window.jQuery.fn.clearObjectUrl();
+            parent.window.jQuery.fn.clearSelectedImage();
         });
 
         jQuery("#container-div-2").click(function() {
             jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
 
-            parent.window.clearObjectUrl();
-            parent.window.clearSelectedImage();
+            parent.window.jQuery.fn.clearObjectUrl();
+            parent.window.jQuery.fn.clearSelectedImage();
         });
     }
 }
 function iResize() {
-    var sizeInt = parseInt(document.getElementById('injected-text').offsetHeight, 10) + 50;
+    var sizeInt = (jQuery('#injected-text').outerHeight() + 50);
 
-    document.getElementById('annotations-div').height = sizeInt + 'px';
-    document.getElementById('annotations-div').style.height = sizeInt + 'px';
+    jQuery('#annotations-div').height(sizeInt);
+    jQuery('#annotations-div').css('height', sizeInt);
 }
 
 function focusText(img) {
@@ -116,8 +116,8 @@ function highlightImage(img, sync) {
         focusText(img);
 
         if (getUrlVars()["editable"] != 'true') {
-            parent.window.setObjectUrl(img.getAttribute("objectUrl"));
-            parent.window.setSelectedImage(img.getAttribute("objectUrl"));
+            parent.window.jQuery.fn.setObjectUrl(img.getAttribute("objectUrl"));
+            parent.window.jQuery.fn.setSelectedImage(img.getAttribute("objectUrl"), img.getAttribute('index'));
         }
     }
 }

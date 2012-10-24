@@ -1,0 +1,50 @@
+1. Install default drupal openid module
+
+2. (Optional) Add basic drupal page for openid only login.
+
+<form action="/user" method="post" id="user-login" accept-charset="UTF-8">
+  <div class="control-group form-type-textfield form-item-openid-identifier">
+    <label for="edit-openid-identifier" class="control-label">Log in using OpenID </label>
+    <div class="controls"> 
+      <input type="text" id="edit-openid-identifier" name="openid_identifier" value="" size="60" maxlength="255" class="form-text" />
+      <p class="help-block">
+        <a href="http://openid.net/">What is OpenID?</a>
+      </p>
+    </div>
+  </div>
+  <input type="hidden" name="form_build_id" value="">
+  <input type="hidden" name="form_id" value="user_login">
+  <input type="hidden" name="openid.return_to" value="http://localhost/openid/authenticate?destination=user">
+  <button class="btn form-submit" id="edit-submit" name="op" value="Log in">Log in</button>
+</form>
+
+3. (Recommended) Update Emmet-security-lorestore.xml. Replace,
+
+	<sec:openid-attribute name="email" 
+			 type="http://schema.openid.net/contact/email" 
+			 required="true" count="2"/>
+	<sec:openid-attribute name="name" 
+			 type="http://schema.openid.net/namePerson/friendly"
+			 required="true"/>
+	<sec:openid-attribute name="email2" 
+			 type="http://axschema.org/contact/email" required="true"/>
+	<sec:openid-attribute name="firstName" 
+			 type="http://axschema.org/namePerson/first" required="true"/>
+	<sec:openid-attribute name="lastName" 
+			 type="http://axschema.org/namePerson/last" required="true"/>
+
+with,
+
+ <sec:openid-attribute name="email" 
+			 type="http://schema.openid.net/contact/email"
+			 count="2"/>
+	<sec:openid-attribute name="name" 
+			 type="http://schema.openid.net/namePerson/friendly"/>
+	<sec:openid-attribute name="email2"
+			 type="http://axschema.org/contact/email"/>
+	<sec:openid-attribute name="firstName"
+			 type="http://axschema.org/namePerson/first"/>
+	<sec:openid-attribute name="lastName"
+			 type="http://axschema.org/namePerson/last"/>
+			 
+This stops lorestore from requiring a reauthorization each time it contacts openid.

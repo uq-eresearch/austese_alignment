@@ -496,11 +496,9 @@ BookReader.prototype.drawLeafsOnePage = function() {
 
             var img = document.createElement("img");
             img.src = this._getPageURI(index, this.reduce, 0);
-	          img.id = 'pageID';
             $(img).addClass('BRnoselect');
             $(img).css('width', width+'px');
             $(img).css('height', height+'px');
-            $(img).css('cursor', 'auto');
             $(div).append(img);
 
         } else {
@@ -700,7 +698,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                 var thumbReduce = Math.floor(this.getPageWidth(leaf) / this.thumbWidth);
                 
                 $(img).attr('src', this.imagesBaseURL + 'transparent.png')
-                    .css({'width': leafWidth+'px', 'height': leafHeight+'px'})
+                    .css({'width': leafWidth+'px', 'height': leafHeight+'px' })
                     .addClass('BRlazyload')
                     // Store the URL of the image that will replace this one
                     .data('srcURL',  this._getPageURI(leaf, thumbReduce));
