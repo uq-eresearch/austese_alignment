@@ -108,7 +108,7 @@ jQuery(document).ready(function() {
               areaSelect['#pagediv' + newIndices[i]] = area;  
               $('#pagediv' + newIndices[i]).children()
                   .mousedown(function() {
-                      clearSelection();
+                      clearOtherSelection('#' + jQuery(this).parent().attr('id'));
                   })
                   .css("cursor","auto");
             }
@@ -146,16 +146,6 @@ jQuery(document).ready(function() {
 
     br.init();
 
-    if (getUrlVars()["editable"] == 'true') {      
-      for (var i = 0; i < br.displayedIndices.length; i++) {    
-        $('#pagediv' + br.displayedIndices[i]).children()
-            .mousedown(function() {
-                clearSelection();
-            })
-            .css("cursor","auto");
-      }
-    }
-
     // Limit the interfaces the user can see
     jQuery('.onepg').hide();
     jQuery('.twopg').hide();
@@ -172,20 +162,34 @@ jQuery(document).ready(function() {
 });
 
 function getSelection() {
-    var returnValue;
-    jQuery.each(areaSelect, function() {
-        var selection = this.getSelection();
+    for (var key in areaSelect) {
+        var selection = areaSelect[key].getSelection();
         if (selection.width != 0 || selection.height != 0) {
-            returnValue = this;
-            return false;
+            return areaSelect[key];
         }
-        return true;
-    });
-    return returnValue;
+    }
 }
 
 function clearSelection() {  
     var sel = getSelection();
+    if (sel) {
+        sel.cancelSelection();
+    }
+}
+
+function getOtherSelection(id) {
+    for (var key in areaSelect) {
+        if (id != key) {
+            var selection = areaSelect[key].getSelection();
+            if (selection.width != 0 || selection.height != 0) {
+                return areaSelect[key];
+            }
+        }
+    }
+}
+
+function clearOtherSelection(id) {
+    var sel = getOtherSelection(id);
     if (sel) {
         sel.cancelSelection();
     }
