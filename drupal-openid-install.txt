@@ -18,7 +18,33 @@
   <button class="btn form-submit" id="edit-submit" name="op" value="Log in">Log in</button>
 </form>
 
-3. (Recommended) Update Emmet-security-lorestore.xml. Replace,
+3. Update OpenID.xml. Replace,
+
+<bean class="au.edu.diasb.springsecurity.ExternalProviderConfiguration">
+		<property name="domain" value="openid:google"/>
+		<property name="defaultAuthorities" value="ROLE_USER" />
+		<property name="providerRegex" 
+				value="https://www.google.com/accounts/o8/id\?.+" />
+		<property name="preferredUserNameAttributes" 
+				value="name,lastName,firstName,email2,email"/>
+		<property name="iconUri"
+				value="#{emmetProps.getProperty('emmet.images')}/google.png"/>
+</bean>
+								
+with,
+								
+<bean class="au.edu.diasb.springsecurity.ExternalProviderConfiguration">
+		<property name="domain" value="openid:google"/>
+		<property name="defaultAuthorities" value="ROLE_USER, ROLE_ORE" />
+		<property name="providerRegex" 
+				value="https://www.google.com/accounts/o8/id\?.+" />
+		<property name="preferredUserNameAttributes" 
+				value="name,lastName,firstName,email2,email"/>
+		<property name="iconUri"
+				value="#{emmetProps.getProperty('emmet.images')}/google.png"/>
+</bean>
+
+4. (Recommended) Update Emmet-security-lorestore.xml. Replace,
 
 	<sec:openid-attribute name="email" 
 			 type="http://schema.openid.net/contact/email" 

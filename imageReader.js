@@ -81,7 +81,7 @@ jQuery(document).ready(function() {
             value = value.replace(/\.$/,'');
             value += '%';
           }
-          $('#BRzoom').text(value);
+          jQuery('#BRzoom').text(value);
 
           var newIndices = this.displayedIndices.diff(displayedPages);
           var oldIndices = displayedPages.diff(this.displayedIndices);
@@ -92,21 +92,19 @@ jQuery(document).ready(function() {
               delete areaSelect['#pagediv' + oldIndices[i]];
             }
             for (var i = 0; i < newIndices.length; i++) {        
-              var area = $('#pagediv' + newIndices[i]).children().imgAreaSelect({
+              var area = jQuery('#pagediv' + newIndices[i]).children().imgAreaSelect({
                 handles: true,
                 instance: true,
-                parent: $('#pagediv' + newIndices[i]),
+                parent: jQuery('#pagediv' + newIndices[i]),
                 onSelectEnd: function(img, selection) {
-                  $('#imageX1').val((selection.x1 * 100)/jQuery(img).width());
-                  $('#imageY1').val((selection.y1 * 100)/jQuery(img).height());
-                  $('#imageX2').val((selection.x2 * 100)/jQuery(img).width());
-                  $('#imageY2').val((selection.y2 * 100)/jQuery(img).height());
-                  $('#imageWidth').val((selection.width * 100)/jQuery(img).width());
-                  $('#imageHeight').val((selection.height * 100)/jQuery(img).height());
+                  jQuery('#imageX1').val((selection.x1 * 100)/jQuery(img).width());
+                  jQuery('#imageY1').val((selection.y1 * 100)/jQuery(img).height());
+                  jQuery('#imageX2').val((selection.x2 * 100)/jQuery(img).width());
+                  jQuery('#imageY2').val((selection.y2 * 100)/jQuery(img).height());
                 }
               });
               areaSelect['#pagediv' + newIndices[i]] = area;  
-              $('#pagediv' + newIndices[i]).children()
+              jQuery('#pagediv' + newIndices[i]).children()
                   .mousedown(function() {
                       clearOtherSelection('#' + jQuery(this).parent().attr('id'));
                   })
@@ -114,10 +112,8 @@ jQuery(document).ready(function() {
             }
           } else {
             for (var i = 0; i < newIndices.length; i++) {
-              $('#pagediv' + newIndices[i]).children().click(function() {
-                $("[selected=selected]").attr("selected","")
-                  .css("background-color","rgb(127,127,0)")
-                  .css("border","3px solid yellow");
+              jQuery('#pagediv' + newIndices[i]).children().click(function() {
+                clearSelection();
                 parent.window.jQuery.fn.clearObjectUrl();
                 parent.window.jQuery.fn.clearSelectedText();
               });
@@ -157,7 +153,7 @@ jQuery(document).ready(function() {
     jQuery('#btnSrch').hide();
 
     if (getUrlVars()["editable"] == 'true') {
-        $('#BRcontainer').attr('onscroll','clearSelection();');
+        jQuery('#BRcontainer').attr('onscroll','clearSelection();');
     }
 });
 
@@ -171,6 +167,7 @@ function getSelection() {
 }
 
 function clearSelection() {  
+    clearSelectedImage();
     var sel = getSelection();
     if (sel) {
         sel.cancelSelection();
@@ -209,12 +206,10 @@ function resetImage(x1, y1, x2, y2) {
                 ((x2 * imgWidth)/100.00), ((y2 * imgHeight)/100.00));
     selection.update();
 
-    $('#imageX1').val(x1);
-    $('#imageY1').val(y1);
-    $('#imageX2').val(x2);
-    $('#imageY2').val(y2);
-    $('#imageWidth').val((parseFloat(x2) - parseFloat(x1)));
-    $('#imageHeight').val((parseFloat(y2) - parseFloat(y1)));
+    jQuery('#imageX1').val(x1);
+    jQuery('#imageY1').val(y1);
+    jQuery('#imageX2').val(x2);
+    jQuery('#imageY2').val(y2);
 }
 
 function selectionVisible() {
@@ -224,13 +219,16 @@ function selectionVisible() {
 
 function focusImageSelection(img, sync) {
     if (img.getAttribute('selected') != 'selected') {
-        jQuery("[selected=selected]").attr("selected", "").css("background-color", "rgb(127,127,0)").css("border", "3px solid yellow");
+        clearSelectedImage();
         img.style.border = '3px solid #CC66CC';
         img.style.backgroundColor = 'rgb(127,0,127)';
         img.setAttribute('selected', 'selected');
 
+        parent.window.jQuery.fn.cycleImageZIndex(img.getAttribute("id").substring(6));
+
         if (sync == true) {
             parent.window.jQuery.fn.setObjectUrl(img.getAttribute("objectUrl"));
+            parent.window.jQuery.fn.cycleTextZIndex(img.getAttribute("id").substring(6));
             parent.window.jQuery.fn.setSelectedText(img.getAttribute("objectUrl"));
         }
     }
@@ -241,7 +239,7 @@ function jumpToIndex(index) {
 }
 
 function setSelectedImage(objectUrl, index) {
-    jQuery("[selected=selected]").attr("selected", "").css("background-color", "rgb(127,127,0)").css("border", "3px solid yellow");
+    clearSelectedImage();
     br.jumpToIndex(index);
     highlightImageWhenAppears(objectUrl, 0)
 }
@@ -251,7 +249,7 @@ function highlightImageWhenAppears(objectUrl, loopCount) {
         return;
     }
 
-    var img = $("div[objectUrl='" + objectUrl + "']")[0];
+    var img = jQuery("div[objectUrl='" + objectUrl + "']")[0];
     if (!img) {
         setTimeout(function(){highlightImageWhenAppears(objectUrl, loopCount + 1);},500);
     } else {
@@ -266,7 +264,13 @@ function highlightImage(img) {
 }
 
 function clearSelectedImage() {
-    jQuery("[selected=selected]").attr("selected", "").css("background-color", "rgb(127,127,0)").css("border", "3px solid yellow");
+    jQuery("[selected=selected]").css("z-index","1");
+    jQuery("[selected=selected]").css("z-index");
+    jQuery("[selected=selected]")
+        .attr("selected", "")
+        .css("background-color", "rgb(127,127,0)")
+        .css("border", "3px solid yellow")
+        .css("pointer-events","auto");
 }
 
 function getSelectedObjectUrl() {
@@ -278,13 +282,13 @@ function getSelectedObjectUrl() {
 }
 
 function getImageUrls() {
-  var imgUrls = [];
-  for (var i = 0; i < numberPages; i++) {
-    imgUrls.push(br.getPageURI(i,0,0));
-  } 
-  return imgUrls;
+    var imgUrls = [];
+    for (var i = 0; i < numberPages; i++) {
+        imgUrls.push(br.getPageURI(i,0,0));
+    }
+    return imgUrls;
 }
 
 function getDisplayedPages() {
-  return displayedPages;
+    return displayedPages;
 }

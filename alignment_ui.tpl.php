@@ -7,7 +7,7 @@ $module_path = drupal_get_path('module', 'alignment');
     </a>
     <label for="edit-openid-identifier" class="control-label">Log in using OpenID</label>
     <div class="controls">
-        <input type="text" id="edit-openid-identifier" name="openid_identifier" value="https://www.google.com/accounts/o8/id" size="40" maxlength="255" class="form-text" />
+        <input type="text" id="edit-openid-identifier" name="openid_identifier" value="https://www.google.com/accounts/o8/id" style="width: 292px" maxlength="255" class="form-text" />
         <p class="help-block">
             <a href="http://openid.net/" style="font-size: .8em;">What is OpenID?</a>
             <button id="login-button" class="btn form-submit" id="edit-submit" name="op" value="Log in" style="float:right" onclick="login()">Log in</button>
@@ -26,7 +26,7 @@ $module_path = drupal_get_path('module', 'alignment');
             <div class="row ">
                 <fieldset class="control-group">
                    <div class="input-append">
-                       <input id="image-search" type="text" value="<?php print $left; ?>"><span id="image-search-button" class="add-on"><i class="icon-search"></i></span>
+                       <input id="image-search" type="text" value="<?php print $left; ?>" /><span id="image-search-button" class="add-on"><i class="icon-search"></i></span>
                    </div>
                 </fieldset>
             </div>
@@ -40,7 +40,7 @@ $module_path = drupal_get_path('module', 'alignment');
             <div class="row">
                 <fieldset class="control-group">
                    <div class="input-append">
-                       <input id="text-search" type="text" value="<?php print $right; ?>"><span id="text-search-button" class="add-on"><i class="icon-search"></i></span>
+                       <input id="text-search" type="text" value="<?php print $right; ?>" /><span id="text-search-button" class="add-on"><i class="icon-search"></i></span>
                    </div>
                 </fieldset>
             </div>
@@ -90,10 +90,10 @@ $module_path = drupal_get_path('module', 'alignment');
                         </button>
                         <p style="display: none">
                             <input style="display: none" type="hidden" id="textUrl" value="" />
-                            <input style="display: none" type="hidden" id="startOffsetXpath"
-                                value="" /> <input style="display: none" type="hidden"
-                                id="endOffsetXpath" value="" /> <input style="display: none"
-                                type="hidden" id="textStartOffset" value="0" /> <input style="display: none" type="hidden" id="textEndOffset" value="0" />
+                            <input style="display: none" type="hidden" id="startOffsetXpath" value="/html[1]/body[1]/div[2]" /> 
+                            <input style="display: none" type="hidden" id="endOffsetXpath" value="/html[1]/body[1]/div[2]" /> 
+                            <input style="display: none" type="hidden" id="textStartOffset" value="0" /> 
+                            <input style="display: none" type="hidden" id="textEndOffset" value="2" />
                         </p>
                     </td>
                     <td><label id="text-selection">No selection: alignment will default to entire text</label></td>

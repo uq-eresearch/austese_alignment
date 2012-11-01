@@ -194,8 +194,7 @@
         var imgHeight = img.height();
         var imgWidth = img.width();
 
-        var rectDiv = jQuery(document.getElementById('image-input').contentWindow.document
-                .createElement("div"));
+        var rectDiv = jQuery("<div></div>");
 
         if (editable == true) {
             rectDiv.attr('id', 'selectedImage').attr(
@@ -319,7 +318,7 @@
         }
         rectDiv.attr('objectUrl', objectUrl);
         image.setAttribute('style', 'position: absolute; left: 6px; top: '
-                + (verticalOffset - 10) + 'px; cursor: pointer;');
+                + verticalOffset + 'px; cursor: pointer; z-index: 2;');
         image.setAttribute('height', '16');
         image.setAttribute('width', '16');
         image.setAttribute('objectUrl', objectUrl);
@@ -366,7 +365,7 @@
 
     // Refresh the text reader with the text from the search bar
     // READ MODE
-    function updateTextReader() {
+    function updateTextReader(objectUrl) {
         var newTextUrl = jQuery('#text-search').val();
 
         clearTextSelection();
@@ -379,6 +378,42 @@
                     + encodeURIComponent(newTextUrl));
             jQuery('#textUrl').val(newTextUrl);
         }
+    }
+
+
+    // Set the objectUrl in memory
+    // READ MODE
+    jQuery.fn.cycleImageZIndex = function(id) {
+        var maxZ = 0;
+        jQuery(alignmentsInMemory).each(function(index, element) {
+            var img = jQuery("#image-input").contents().find('#Image_' + element);
+            var newZ = parseInt(img.css('z-index')) + 1;
+            if (newZ > maxZ) {
+                maxZ = newZ;
+            }
+            img.css('z-index', newZ);
+        });
+        var img = jQuery("#image-input").contents().find('#Image_' + id);
+        img.css('z-index', maxZ + 1);
+        img.css('pointer-events','none');
+    }
+
+    // Set the objectUrl in memory
+    // READ MODE
+    jQuery.fn.cycleTextZIndex = function(id) {
+        var maxZ = 0;
+        jQuery(alignmentsInMemory).each(function(index, element) {
+            var img = jQuery("#text-input").contents().find('#Text_' + element);
+
+            var newZ = parseInt(img.css('z-index')) + 1;
+            if (newZ > maxZ) {
+                maxZ = newZ;
+            }
+            img.css('z-index', newZ);
+        });
+        var img = jQuery("#text-input").contents().find('#Text_' + id);
+        img.css('z-index', maxZ + 1);
+        img.css('pointer-events','none');
     }
 
     // Set the objectUrl in memory
@@ -491,6 +526,13 @@
         }
     }
 
+    // Set the highlighted text in the text frame
+    // TESTING
+    jQuery.fn.highlightText = function(startOffset, endOffset) {
+        var text_iframe = document.getElementById('text-input');
+        text_iframe.contentWindow.focusTextOffsets(startOffset, endOffset);
+    }
+
     // Clear the current selected image in memory
     // READ/CREATE/EDIT MODE
     function clearImageSelection() {
@@ -505,10 +547,14 @@
     // Clear the current selected text link in memory
     // READ/CREATE/EDIT MODE
     function clearTextSelection() {
+        var text_iframe = document.getElementById('text-input');
+        var container = text_iframe.contentWindow.document
+                .getElementById('injected-text');
+
         jQuery('#textStartOffset').val(0);
-        jQuery('#startOffsetXpath').val('');
-        jQuery('#textEndOffset').val(0);
-        jQuery('#endOffsetXpath').val('');
+        jQuery('#startOffsetXpath').value = '/html[1]/body[1]/div[2]';
+        jQuery('#textEndOffset').value = 2;
+        jQuery('#endOffsetXpath').value = '/html[1]/body[1]/div[2]';
         jQuery('#text-selection')
             .html("No selection: alignment will default to entire text");
     }
@@ -531,10 +577,8 @@
         var y1 = image_iframe.contentWindow.document.getElementById('imageY1').value;
         var x2 = image_iframe.contentWindow.document.getElementById('imageX2').value;
         var y2 = image_iframe.contentWindow.document.getElementById('imageY2').value;
-        var height = image_iframe.contentWindow.document
-                .getElementById('imageHeight').value;
-        var width = image_iframe.contentWindow.document
-                .getElementById('imageWidth').value;
+        var width = (parseFloat(x2) - parseFloat(x1));
+        var height = (parseFloat(y2) - parseFloat(y1));
 
         if (image_iframe.contentWindow.selectionVisible()) {
             var img = jQuery(jQuery(selection.getOptions().parent).children('img')[0]);
@@ -564,9 +608,9 @@
             rectDiv.setAttribute(
                             'style',
                             'position: absolute; overflow-x: hidden; overflow-y: hidden; z-index: 2;' 
-														        + 'display: block; opacity:0.4; filter:alpha(opacity=40); '
-																		+ 'background-color: rgb(127, 127, 0); '
-																		+ 'cursor:pointer; border: 3px solid yellow; left: '
+				                    + 'display: block; opacity:0.4; filter:alpha(opacity=40); '
+                                    + 'background-color: rgb(127, 127, 0); '
+                                    + 'cursor:pointer; border: 3px solid yellow; left: '
                                     + ((x1 * img.width())/100)
                                     + 'px; top: '
                                     + ((y1 * img.height())/100)
@@ -616,9 +660,9 @@
             }
 
             document.getElementById('textStartOffset').value = 0;
-            document.getElementById('startOffsetXpath').value = '';
-            document.getElementById('textEndOffset').value = 0;
-            document.getElementById('endOffsetXpath').value = '';
+            document.getElementById('startOffsetXpath').value = '/html[1]/body[1]/div[2]';
+            document.getElementById('textEndOffset').value = 2;
+            document.getElementById('endOffsetXpath').value = '/html[1]/body[1]/div[2]';
 
             jQuery('#text-selection').html(
                     "No selection: alignment will default to entire text");
@@ -691,7 +735,7 @@
         var image = text_iframe.contentWindow.document.createElement("img");
         image.setAttribute('id', 'link_image');
         image.setAttribute('style', 'position: absolute; left: 6px; top: '
-                + (verticalOffset - 10) + 'px; cursor: pointer;');
+                + verticalOffset + 'px; cursor: pointer; z-index: 2;');
         image.setAttribute('height', '16');
         image.setAttribute('width', '16');
         image.setAttribute('src', 'resources/link_black.png');
@@ -860,11 +904,11 @@
         var textUrl = jQuery('#textUrl').val();
 
         var createData = "<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' "
-				        + "xmlns:dc='http://purl.org/dc/elements/1.1/' "
-								+ "xmlns:oac='http://www.openannotation.org/ns/'>"
-								+ "<oac:Annotation rdf:about='/lorestore/oac/dummy'>"
-								+ "<rdf:type rdf:resource='http://austese.net/ns/annotation/Alignment'/>"
-								+ "<oac:hasTarget rdf:resource='"
+                + "xmlns:dc='http://purl.org/dc/elements/1.1/' "
+                + "xmlns:oac='http://www.openannotation.org/ns/'>"
+                + "<oac:Annotation rdf:about='/lorestore/oac/dummy'>"
+                + "<rdf:type rdf:resource='http://austese.net/ns/annotation/Alignment'/>"
+                + "<oac:hasTarget rdf:resource='"
                 + imageUrl
                 + "#xywh="
                 + x
@@ -891,7 +935,7 @@
         var objectUrl;
 
         jQuery.ajax({
-            url : '/lorestore/oac',
+            url : '/lorestore/oac/',
             type : 'POST',
             data : createData,
             async : false,
@@ -1281,12 +1325,6 @@
         jQuery('#text-search').attr('disabled', 'disabled');
         jQuery('#image-search-button').attr('disabled', 'disabled');
         jQuery('#text-search-button').attr('disabled', 'disabled');
-    }
-
-    // Clear the selected image annotation in the image iframe
-    // TESTING
-    function highlightText(startOffset, endOffset) {
-        jQuery('#text-input').contentWindow.focusTextOffsets(startOffset, endOffset);
     }
 
     var READ_MODE = 0;

@@ -23,28 +23,29 @@ window.onload = function() {
 
     if (getUrlVars()["editable"] == 'true') {
         jQuery("#container-div-1").click(function() {
-            jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
+           clearSelected();
         });
 
         jQuery("#container-div-2").click(function() {
-            jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
+            clearSelected();
         });
     } else {
         jQuery("#container-div-1").click(function() {
-            jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
+            clearSelected();
 
             parent.window.jQuery.fn.clearObjectUrl();
             parent.window.jQuery.fn.clearSelectedImage();
         });
 
         jQuery("#container-div-2").click(function() {
-            jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
+            clearSelected();
 
             parent.window.jQuery.fn.clearObjectUrl();
             parent.window.jQuery.fn.clearSelectedImage();
         });
     }
 }
+
 function iResize() {
     var sizeInt = (jQuery('#injected-text').outerHeight() + 50);
 
@@ -109,21 +110,24 @@ function focusTextOffsets(startOffset, endOffset) {
 
 function highlightImage(img, sync) {
     if (img.getAttribute('selected') != 'selected') {
-        jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
+        clearSelected();
         img.src = 'resources/link_yellow.png';
         img.setAttribute('selected', 'selected');
+
+        parent.window.jQuery.fn.cycleTextZIndex(img.getAttribute("id").substring(5));
 
         focusText(img);
 
         if (getUrlVars()["editable"] != 'true') {
             parent.window.jQuery.fn.setObjectUrl(img.getAttribute("objectUrl"));
+            parent.window.jQuery.fn.cycleImageZIndex(img.getAttribute("id").substring(5));
             parent.window.jQuery.fn.setSelectedImage(img.getAttribute("objectUrl"), img.getAttribute('index'));
         }
     }
 }
 
 function setSelectedText(objectUrl) {
-    jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
+    clearSelected();
     var img = jQuery("[objectUrl=" + objectUrl + "]")[0];
     img.setAttribute("selected", "selected");
     img.setAttribute("src", "resources/link_yellow.png");
@@ -135,8 +139,17 @@ function setSelectedText(objectUrl) {
     focusText(img);
 }
 
+function clearSelected(){
+    jQuery("[selected=selected]").css("z-index","1");
+    jQuery("[selected=selected]").css("z-index");
+    jQuery("[selected=selected]")
+        .attr("src", "resources/link_black.png")
+        .attr("selected", "")
+        .css("pointer-events","auto");
+}
+
 function clearSelectedText() {
-    jQuery("[selected=selected]").attr("selected", "").attr("src", "resources/link_black.png");
+    clearSelected();
 
     if (window.getSelection) {
         if (window.getSelection().empty) {
