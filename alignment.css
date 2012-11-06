@@ -14,7 +14,7 @@
 	border-radius:3px 3px 3px 3px;
     -moz-border-radius: 3px; /* Firefox */
     -webkit-border-radius: 3px; /* Safari, Chrome */
-   width: 220px;
+   width: 300px;
 }
 form.signin {
     margin: 0px
