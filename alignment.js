@@ -3,6 +3,7 @@
     var placeholderFunction;
     var loggedIn = false;
     var alignmentsInMemory = [];
+    var initialPageLoad = false;
 
     // Refresh the text and image iframe with annotations
     // READ MODE
@@ -16,6 +17,7 @@
                 jQuery('#image-input').off();
                 jQuery('#text-input').off();
                 loadAnnotations(textUrl);
+                initialPageLoad = true;
             }).attr('src',"/" + modulePath
                     + "/imageReader.html?ui=embed&url="
                     + encodeURIComponent(imageUrl)
@@ -469,7 +471,9 @@
     // Refresh the text and image iframe with annotations
     // READ MODE
     jQuery.fn.refreshOrUpdateAnnotations = function() {
-        loadAnnotations(document.getElementById('text-search').value);
+        if (initialPageLoad) {
+            loadAnnotations(document.getElementById('text-search').value);
+        }
     }
 
     // Check if the selected area should be visible
