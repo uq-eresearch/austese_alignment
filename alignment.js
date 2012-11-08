@@ -817,8 +817,8 @@
     function attemptLogin() {
         var openid_identifier = getCookie('Drupal.visitor.openid_identifier');
         if (openid_identifier == null || openid_identifier.length <= 0) { 
-........    openid_identifier = checkForOpenID();
-........}
+            openid_identifier = checkForOpenID();
+        }
         if (openid_identifier != null && openid_identifier.length > 0) { 
             popupWindow = window.open('/lorestore/j_spring_openid_security_check?openid_identifier=' 
               + encodeURIComponent(openid_identifier) + '&submit', 'openid_popup','width=400,height=200');
@@ -841,46 +841,46 @@
             showLogin();
         }
     }
-....
-....function checkForOpenID() {
-....    var returnValue;
+
+    function checkForOpenID() {
+        var returnValue;
         jQuery.ajax({
             url: '/user/',
             type: 'GET',
-............async: false,
+            async: false,
             complete: function (xhr, textStatus) {
-............    var userUrl;
-..              jQuery.each(jQuery(xhr.responseText), function(index, element) {
-....................if (element.hasAttribute 
-....................        && element.getAttribute 
-....................    ....&& element.getAttribute('resource') 
-....................    ....&& element.hasAttribute('rel') 
-....................    ....&& (element.getAttribute('rel') == "foaf:account")
-....................    ....&& element.hasAttribute('typeof') 
-....................    ....&& (element.getAttribute('typeof') == "foaf:Person")) {
-....................    userUrl = element.getAttribute('resource');
-....................}
-................});
-................if (userUrl) {
-....................jQuery.ajax({
-........................url: userUrl + '/openid',
+                var userUrl;
+                jQuery.each(jQuery(xhr.responseText), function(index, element) {
+                    if (element.hasAttribute 
+                            && element.getAttribute 
+                            && element.getAttribute('resource') 
+                            && element.hasAttribute('rel') 
+                            && (element.getAttribute('rel') == "foaf:account")
+                            && element.hasAttribute('typeof') 
+                            && (element.getAttribute('typeof') == "foaf:Person")) {
+                        userUrl = element.getAttribute('resource');
+                    }
+                });
+                if (userUrl) {
+                    jQuery.ajax({
+                        url: userUrl + '/openid',
                         type: 'GET',
-............            async: false,
+                        async: false,
                         complete: function (xhr, textStatus) {
-            ..              jQuery.each(jQuery(xhr.responseText), function(index, element) {
-................................if (element.childNodes) {
-................................    if (jQuery(element).find('.odd').length > 0) {
-................................        returnValue = String(jQuery(element).find('.odd')[0].children[0].innerHTML);
-................................    }
-............................    }
-...........                 });
-..                      }
+                            jQuery.each(jQuery(xhr.responseText), function(index, element) {
+                                if (element.childNodes) {
+                                    if (jQuery(element).find('.odd').length > 0) {
+                                        returnValue = String(jQuery(element).find('.odd')[0].children[0].innerHTML);
+                                    }
+                                }
+                            });
+                        }
                     });
-................}
-..          }
+                }
+            }
         });
-........return returnValue;
-....}
+        return returnValue;
+    }
 
     // Login to lorestore
     // CREATE/EDIT MODE
