@@ -3,7 +3,7 @@
     var placeholderFunction;
     var loggedIn = false;
     var alignmentsInMemory = [];
-    var initialPageLoad = false;
+    var loadingAnnotations = false;
 
     // Refresh the text and image iframe with annotations
     // READ MODE
@@ -17,7 +17,6 @@
                 jQuery('#image-input').off();
                 jQuery('#text-input').off();
                 loadAnnotations(textUrl);
-                initialPageLoad = true;
             }).attr('src',"/" + modulePath
                     + "/imageReader.html?ui=embed&url="
                     + encodeURIComponent(imageUrl)
@@ -58,15 +57,17 @@
     // Load annotations for a given image and text
     // READ MODE
     function loadAnnotations(textUrl) {
-        jQuery(alignmentsInMemory).each(function(index, element) {
-            jQuery("#image-input").contents().find('#Image_' + element).remove();
-            jQuery("#text-input").contents().find('#Text_' + element).remove();
-        });
-        alignmentsInMemory = [];
+        if (!loadingAnnotations) {
+            loadingAnnotations = true;
+            jQuery(alignmentsInMemory).each(function(index, element) {
+                jQuery("#image-input").contents().find('#Image_' + element).remove();
+                jQuery("#text-input").contents().find('#Text_' + element).remove();
+            });
+            alignmentsInMemory = [];
 
-        var imgs = jQuery("#image-input")[0].contentWindow.getImageUrls();
- 
-        jQuery.ajax({
+            var imgs = jQuery("#image-input")[0].contentWindow.getImageUrls();
+
+            jQuery.ajax({
                     url : '/lorestore/oac/?annotates=' + textUrl,
                     type : 'GET',
                     async : false,
@@ -169,7 +170,7 @@
                                                 }
                                             });
                                         }
-                                    
+
                                         if (startOffset != -1
                                                 && startOffsetXpath != ''
                                                 && endOffset != -1
@@ -194,14 +195,15 @@
                         }
                         return;
                     }
-                });
+            });
+            loadingAnnotations = false;
+        }
     }
 
     // Add a given image and text annotation to the image and text iframe
     // READ MODE
     function addImageAndText(annotationID, objectUrl, src, index, x, y, w, h, startOffset,
             startOffsetXpath, endOffset, endOffsetXpath, editable) {
-
         var img = jQuery(jQuery("#image-input").contents().find('img[src="' + src + '"]')[0]);
         var imgHeight = img.height();
         var imgWidth = img.width();
@@ -253,6 +255,8 @@
             var pagediv = img.parent();
 
             jQuery("#image-input").contents().find('img[src="' + src + '"]').parent().append(rectDiv);
+        } else {
+            return;
         }
 
         var verticalOffset = 30;
@@ -261,15 +265,20 @@
                 .getElementById('injected-text');
 
         var selectedText;
-
+       
         if (text_iframe.contentWindow.getSelection
                 && text_iframe.contentWindow.document.createRange) {
             var sel = text_iframe.contentWindow.getSelection();
             var range = text_iframe.contentWindow.document.createRange();
+            var startElement = lookupElementByXPath(startOffsetXpath);
+            var endElement = lookupElementByXPath(endOffsetXpath);
+            if (startElement == null || endElement == null) {
+                rectDiv.remove();
+                return;
+            }
             range.selectNodeContents(injectedText);
-            range.setStart(lookupElementByXPath(startOffsetXpath),
-                    startOffset);
-            range.setEnd(lookupElementByXPath(endOffsetXpath), endOffset);
+            range.setStart(startElement, startOffset);
+            range.setEnd(endElement, endOffset);
             selectedText = range.toString();
             sel.removeAllRanges();
             sel.addRange(range);
@@ -277,15 +286,18 @@
                 && text_iframe.contentWindow.document.body.createTextRange) {
             var textRange = text_iframe.contentWindow.document.body
                     .createTextRange();
+            var startElement = lookupElementByXPath(startOffsetXpath);
+            var endElement = lookupElementByXPath(endOffsetXpath);
+            if (startElement == null || endElement == null) {
+                rectDiv.remove();
+                return;
+            }
             textRange.moveToElementText(injectedText);
-            textRange.setStart(lookupElementByXPath(startOffsetXpath),
-                    startOffset);
-            textRange.setEnd(lookupElementByXPath(endOffsetXpath),
-                    endOffset);
+            textRange.setStart(startElement, startOffset);
+            textRange.setEnd(endElement, endOffset);
             selectedText = textRange.toString();
             textRange.select();
         }
-
 
         range.collapse(true);
 
@@ -471,9 +483,7 @@
     // Refresh the text and image iframe with annotations
     // READ MODE
     jQuery.fn.refreshOrUpdateAnnotations = function() {
-        if (initialPageLoad) {
-            loadAnnotations(document.getElementById('text-search').value);
-        }
+        loadAnnotations(document.getElementById('text-search').value);
     }
 
     // Check if the selected area should be visible
