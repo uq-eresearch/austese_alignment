@@ -10,10 +10,6 @@ var areaSelect = {};
 var displayedPages = [];
 var numberPages = 1;
 
-Array.prototype.diff = function(a) {
-    return this.filter(function(i) {return !(a.indexOf(i) > -1);});
-};
-
 jQuery(document).ready(function() {
     br = new BookReader();
     jQuery.extend(br, {
@@ -83,8 +79,8 @@ jQuery(document).ready(function() {
           }
           jQuery('#BRzoom').text(value);
 
-          var newIndices = this.displayedIndices.diff(displayedPages);
-          var oldIndices = displayedPages.diff(this.displayedIndices);
+          var newIndices = diff(this.displayedIndices, displayedPages);
+          var oldIndices = diff(displayedPages, this.displayedIndices);
           displayedPages = this.displayedIndices;
 
           if (getUrlVars()["editable"] == 'true') {      
@@ -156,6 +152,24 @@ jQuery(document).ready(function() {
         jQuery('#BRcontainer').attr('onscroll','clearSelection();');
     }
 });
+
+function diff(array1, array2) {
+    var res = [];
+		for (var i = 0; i < array1.length; i++) {
+      var val = array1[i];
+			var indexOf = -1;
+			for (var j = 0; j < array2.length && indexOf == -1; j++) {
+			  if (array2[j] == val){ 
+				  indexOf = j;
+				}
+			}
+			if (indexOf > -1) {
+			  res.push(val);
+			}
+    }
+ 
+    return res;
+}
 
 function getSelection() {
     for (var key in areaSelect) {

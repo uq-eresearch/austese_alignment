@@ -3,13 +3,14 @@
     var placeholderFunction;
     var loggedIn = false;
     var alignmentsInMemory = [];
+    var loadingAnnotations = false;
 
     // Refresh the text and image iframe with annotations
     // READ MODE
     function refreshAnnotations(imageUrl, textUrl) {
         var imageUrl = qualifyURL(imageUrl);
         var textUrl = qualifyURL(textUrl);
-
+				
         jQuery('#text-input').on('load',function(e) {
             jQuery('#image-input').on('load',function(e) {
                 // Remove onload functions
@@ -34,19 +35,39 @@
         a.href = url;
         return a.href;
     }
+    
+    function indexOf(array, element) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i] == element){ 
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    function indexOf(array, element, startOffset) {
+        for (var i = startOffset; i < array.length; i++) {
+            if (array[i] == element){ 
+                return i;
+            }
+        }
+        return -1;
+    }
 
     // Load annotations for a given image and text
     // READ MODE
     function loadAnnotations(textUrl) {
-        jQuery(alignmentsInMemory).each(function(index, element) {
-            jQuery("#image-input").contents().find('#Image_' + element).remove();
-            jQuery("#text-input").contents().find('#Text_' + element).remove();
-        });
-        alignmentsInMemory = [];
+        if (!loadingAnnotations) {
+            loadingAnnotations = true;
+            jQuery(alignmentsInMemory).each(function(index, element) {
+                jQuery("#image-input").contents().find('#Image_' + element).remove();
+                jQuery("#text-input").contents().find('#Text_' + element).remove();
+            });
+            alignmentsInMemory = [];
 
-        var imgs = jQuery("#image-input")[0].contentWindow.getImageUrls();
- 
-        jQuery.ajax({
+            var imgs = jQuery("#image-input")[0].contentWindow.getImageUrls();
+
+            jQuery.ajax({
                     url : '/lorestore/oac/?annotates=' + textUrl,
                     type : 'GET',
                     async : false,
@@ -56,120 +77,112 @@
                         var patt2 = "#xywh=[\\.0-9]+,[\\.0-9]+,[\\.0-9]+,[\\.0-9]+$";
                         var patt3 = /[^=#,]+/g;
                         var patt4 = /[\.0-9]+/g;
+                        
+                        for ( var i = 0; i < res.childNodes.length; i++) {
+                            var length = res.childNodes[i].childNodes.length;
+                            for ( var j = 0; j < length; j++) {
+                                if ('getElementsByTagName' in res.childNodes[i].childNodes[j]) {
+                                    var hasTargets = res.childNodes[i].childNodes[j]
+                                            .getElementsByTagName('hasTarget');
+                                    if (hasTargets.length == 2) {
+                                        var startOffset = -1;
+                                        var startOffsetXpath = '';
+                                        var endOffset = -1;
+                                        var endOffsetXpath = '';
+                                        var x = -1;
+                                        var y = -1;
+                                        var w = -1;
+                                        var h = -1;
+                                        var src = '';
+                                        var pageIndex = -1;
 
-                        var length = res.childNodes[1].childNodes.length;
-                        for ( var i = 0; i < length; i++) {
-                            if (res.childNodes[1].childNodes[i].getElementsByTagName) {
-                                var hasTargets = res.childNodes[1].childNodes[i]
-                                        .getElementsByTagName('hasTarget');
-                                if (hasTargets.length == 2) {
-                                    var startOffset = -1;
-                                    var startOffsetXpath = '';
-                                    var endOffset = -1;
-                                    var endOffsetXpath = '';
-                                    var x = -1;
-                                    var y = -1;
-                                    var w = -1;
-                                    var h = -1;
-                                    var src = '';
-                                    var pageIndex = -1;
+                                        var objectUrl = res.childNodes[i].childNodes[j].getAttribute('rdf:about');
+                                        var annotationID = objectUrl.substring(objectUrl.lastIndexOf("/") + 1);
+  
+                                        var res1 = hasTargets[0]
+                                                .getAttribute('rdf:resource');
+                                        var res2 = hasTargets[1]
+                                                .getAttribute('rdf:resource');
 
-                                    var objectUrl = res.childNodes[1].childNodes[i]
-                                            .getAttribute('rdf:about');
-                                    var annotationID = objectUrl
-                                            .substring(objectUrl
-                                                    .lastIndexOf("/") + 1);
-
-                                    var res1 = hasTargets[0]
-                                            .getAttribute('rdf:resource');
-                                    var res2 = hasTargets[1]
-                                            .getAttribute('rdf:resource');
-
-                                    var matchs;
-                                    var numbers;
-                                    if (res1.match(patt1)
-                                            && res1
-                                                    .substring(0,
-                                                            textUrl.length) === textUrl) {
-                                        matchs = res1.match(patt1);
-                                        results = matchs.toString()
-                                                .match(patt3);
-                                        if (results.length == 6) {
-                                            startOffset = results[4];
-                                            startOffsetXpath = results[1];
-                                            endOffset = results[5];
-                                            endOffsetXpath = results[2];
+                                        var matchs;
+                                        var numbers;
+                                        if (res1.match(patt1) && res1.substring(0, textUrl.length) === textUrl) {
+                                          matchs = res1.match(patt1);
+                                          results = matchs.toString().match(patt3);
+                                          if (results.length == 6) {
+                                              startOffset = results[4];
+                                              startOffsetXpath = results[1];
+                                              endOffset = results[5];
+                                              endOffsetXpath = results[2];
+                                          }
                                         }
-                                    }
 
-                                    if (res1.match(patt2)) {
-                                        jQuery(imgs).each(function(index, element) {
-                                            if (res1.match(patt2)
-                                                && res1.substring(0,
-                                                    element.length) === element) {
-                                                matchs = res1.match(patt2);
-                                                numbers = matchs.toString()
-                                                        .match(patt4);
-                                                if (numbers.length == 4) {
-                                                    x = numbers[0];
-                                                    y = numbers[1];
-                                                    w = numbers[2];
-                                                    h = numbers[3];
-
-                                                    src = element;
-                                                    pageIndex = imgs.indexOf(element);
+                                        if (res1.match(patt2)) {
+                                            jQuery(imgs).each(function(index, element) {
+                                                if (res1.match(patt2) && res1.substring(0,
+                                                        element.length) === element) {
+                                                    matchs = res1.match(patt2);
+                                                    numbers = matchs.toString()
+                                                            .match(patt4);
+                                                    if (numbers.length == 4) {
+                                                        x = numbers[0];
+                                                        y = numbers[1];
+                                                        w = numbers[2];
+                                                        h = numbers[3];
+    
+                                                        src = element;
+                                                        pageIndex = indexOf(imgs, element);
+                                                    }
                                                 }
-                                            }
-                                        });
-                                    }
-
-                                    if (res2.match(patt1)
-                                            && res2.substring(0,
-                                                            textUrl.length) === textUrl) {
-                                        matchs = res2.match(patt1);
-                                        results = matchs.toString()
-                                                .match(patt3);
-                                        if (results.length == 6) {
-                                            startOffset = results[4];
-                                            startOffsetXpath = results[1];
-                                            endOffset = results[5];
-                                            endOffsetXpath = results[2];
+                                            });
                                         }
-                                    }
 
-
-                                    if (res2.match(patt2)) {
-                                        jQuery(imgs).each(function(index, element) {
-                                            if (res2.match(patt2)
-                                                    && res2.substring(0,
-                                                            element.length) === element) {
-                                                matchs = res2.match(patt2);
-                                                numbers = matchs.toString()
-                                                        .match(patt4);
-                                                if (numbers.length == 4) {
-                                                    x = numbers[0];
-                                                    y = numbers[1];
-                                                    w = numbers[2];
-                                                    h = numbers[3];
-
-                                                    src = element;
-                                                    pageIndex = imgs.indexOf(element);
-                                                }
+                                        if (res2.match(patt1) && res2.substring(0,
+                                                textUrl.length) === textUrl) {
+                                            matchs = res2.match(patt1);
+                                            results = matchs.toString()
+                                                    .match(patt3);
+                                            if (results.length == 6) {
+                                                startOffset = results[4];
+                                                startOffsetXpath = results[1];
+                                                endOffset = results[5];
+                                                endOffsetXpath = results[2];
                                             }
-                                        });
-                                    }
+                                        }
 
-                                    if (startOffset != -1
-                                            && startOffsetXpath != ''
-                                            && endOffset != -1
-                                            && endOffsetXpath != '' && x != -1
-                                            && y != -1 && w != -1 && h != -1) {
-                                        addImageAndText(annotationID,
-                                                objectUrl,  src, pageIndex,
-                                                x, y, w, h,
-                                                startOffset, startOffsetXpath,
-                                                endOffset, endOffsetXpath,
-                                                false);
+
+                                        if (res2.match(patt2)) {
+                                            jQuery(imgs).each(function(index, element) {
+                                                if (res2.match(patt2) && res2.substring(0,
+                                                         element.length) === element) {
+                                                    matchs = res2.match(patt2);
+                                                    numbers = matchs.toString()
+                                                            .match(patt4);
+                                                    if (numbers.length == 4) {
+                                                        x = numbers[0];
+                                                        y = numbers[1];
+                                                        w = numbers[2];
+                                                        h = numbers[3];
+
+                                                        src = element;
+                                                        pageIndex = indexOf(imgs, element);
+                                                    }
+                                                }
+                                            });
+                                        }
+
+                                        if (startOffset != -1
+                                                && startOffsetXpath != ''
+                                                && endOffset != -1
+                                                && endOffsetXpath != '' && x != -1
+                                                && y != -1 && w != -1 && h != -1) {
+                                            addImageAndText(annotationID,
+                                                    objectUrl,  src, pageIndex,
+                                                    x, y, w, h,
+                                                    startOffset, startOffsetXpath,
+                                                    endOffset, endOffsetXpath,
+                                                    false);
+                                        }
                                     }
                                 }
                             }
@@ -182,14 +195,15 @@
                         }
                         return;
                     }
-                });
+            });
+            loadingAnnotations = false;
+        }
     }
 
     // Add a given image and text annotation to the image and text iframe
     // READ MODE
     function addImageAndText(annotationID, objectUrl, src, index, x, y, w, h, startOffset,
             startOffsetXpath, endOffset, endOffsetXpath, editable) {
-
         var img = jQuery(jQuery("#image-input").contents().find('img[src="' + src + '"]')[0]);
         var imgHeight = img.height();
         var imgWidth = img.width();
@@ -241,6 +255,8 @@
             var pagediv = img.parent();
 
             jQuery("#image-input").contents().find('img[src="' + src + '"]').parent().append(rectDiv);
+        } else {
+            return;
         }
 
         var verticalOffset = 30;
@@ -249,15 +265,20 @@
                 .getElementById('injected-text');
 
         var selectedText;
-
+       
         if (text_iframe.contentWindow.getSelection
                 && text_iframe.contentWindow.document.createRange) {
             var sel = text_iframe.contentWindow.getSelection();
             var range = text_iframe.contentWindow.document.createRange();
+            var startElement = lookupElementByXPath(startOffsetXpath);
+            var endElement = lookupElementByXPath(endOffsetXpath);
+            if (startElement == null || endElement == null) {
+                rectDiv.remove();
+                return;
+            }
             range.selectNodeContents(injectedText);
-            range.setStart(lookupElementByXPath(startOffsetXpath),
-                    startOffset);
-            range.setEnd(lookupElementByXPath(endOffsetXpath), endOffset);
+            range.setStart(startElement, startOffset);
+            range.setEnd(endElement, endOffset);
             selectedText = range.toString();
             sel.removeAllRanges();
             sel.addRange(range);
@@ -265,15 +286,18 @@
                 && text_iframe.contentWindow.document.body.createTextRange) {
             var textRange = text_iframe.contentWindow.document.body
                     .createTextRange();
+            var startElement = lookupElementByXPath(startOffsetXpath);
+            var endElement = lookupElementByXPath(endOffsetXpath);
+            if (startElement == null || endElement == null) {
+                rectDiv.remove();
+                return;
+            }
             textRange.moveToElementText(injectedText);
-            textRange.setStart(lookupElementByXPath(startOffsetXpath),
-                    startOffset);
-            textRange.setEnd(lookupElementByXPath(endOffsetXpath),
-                    endOffset);
+            textRange.setStart(startElement, startOffset);
+            textRange.setEnd(endElement, endOffset);
             selectedText = textRange.toString();
             textRange.select();
         }
-
 
         range.collapse(true);
 
@@ -474,9 +498,6 @@
             var imgHeight = img.height();
             var imgWidth = img.width();
 
-            console.log(img);
-            console.log(jQuery('#imageUrl'));
-
             var rectDiv = jQuery(document.getElementById('image-input').contentWindow.document
                 .createElement("div"));
 
@@ -608,7 +629,7 @@
             rectDiv.setAttribute(
                             'style',
                             'position: absolute; overflow-x: hidden; overflow-y: hidden; z-index: 2;' 
-				                    + 'display: block; opacity:0.4; filter:alpha(opacity=40); '
+                                    + 'display: block; opacity:0.4; filter:alpha(opacity=40); '
                                     + 'background-color: rgb(127, 127, 0); '
                                     + 'cursor:pointer; border: 3px solid yellow; left: '
                                     + ((x1 * img.width())/100)
@@ -767,7 +788,6 @@
                     i++;
                 }
             }
-            ;
             segs.unshift('text()[' + i + ']');
             elm = elm.parentNode;
         }
@@ -777,31 +797,28 @@
                     i++;
                 }
             }
-            ;
             segs.unshift(elm.localName.toLowerCase() + '[' + i + ']');
             elm = elm.parentNode;
         }
         return segs.length ? '/' + segs.join('/') : null;
     }
-    ;
 
     // Retrieve element at XPath
     function lookupElementByXPath(path) {
         var evaluator = new XPathEvaluator();
-        var result = evaluator
-                .evaluate(
-                        path,
-                        document.getElementById('text-input').contentWindow.document.documentElement,
-                        null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+        var result = evaluator.evaluate(
+            path,
+            document.getElementById('text-input').contentWindow.document.documentElement,
+            null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
         return result.singleNodeValue;
     }
 
     function getCookie(c_name) {
         if (document.cookie.length > 0) {
-            c_start = document.cookie.indexOf(c_name + "=");
+            c_start = String(document.cookie).indexOf(c_name + "=");
             if (c_start != -1) {
                 c_start = c_start + c_name.length + 1;
-                c_end = document.cookie.indexOf(";", c_start);
+                c_end = String(document.cookie).indexOf(";", c_start);
                 if (c_end == -1) c_end = document.cookie.length;
                 return unescape(document.cookie.substring(c_start, c_end));
             }
@@ -813,10 +830,12 @@
     // CREATE/EDIT MODE
     function attemptLogin() {
         var openid_identifier = getCookie('Drupal.visitor.openid_identifier');
-
+        if (openid_identifier == null || openid_identifier.length <= 0) { 
+            openid_identifier = checkForOpenID();
+        }
         if (openid_identifier != null && openid_identifier.length > 0) { 
             popupWindow = window.open('/lorestore/j_spring_openid_security_check?openid_identifier=' 
-						  + encodeURIComponent(openid_identifier) + '&submit', 'openid_popup','width=400,height=200');
+              + encodeURIComponent(openid_identifier) + '&submit', 'openid_popup','width=400,height=200');
 
             var waitingBox = jQuery('#login-waiting-box').fadeIn(300);
 
@@ -835,6 +854,46 @@
         } else {
             showLogin();
         }
+    }
+
+    function checkForOpenID() {
+        var returnValue;
+        jQuery.ajax({
+            url: '/user/',
+            type: 'GET',
+            async: false,
+            complete: function (xhr, textStatus) {
+                var userUrl;
+                jQuery.each(jQuery(xhr.responseText), function(index, element) {
+                    if (element.hasAttribute 
+                            && element.getAttribute 
+                            && element.getAttribute('resource') 
+                            && element.hasAttribute('rel') 
+                            && (element.getAttribute('rel') == "foaf:account")
+                            && element.hasAttribute('typeof') 
+                            && (element.getAttribute('typeof') == "foaf:Person")) {
+                        userUrl = element.getAttribute('resource');
+                    }
+                });
+                if (userUrl) {
+                    jQuery.ajax({
+                        url: userUrl + '/openid',
+                        type: 'GET',
+                        async: false,
+                        complete: function (xhr, textStatus) {
+                            jQuery.each(jQuery(xhr.responseText), function(index, element) {
+                                if (element.childNodes) {
+                                    if (jQuery(element).find('.odd').length > 0) {
+                                        returnValue = String(jQuery(element).find('.odd')[0].children[0].innerHTML);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+        return returnValue;
     }
 
     // Login to lorestore
@@ -863,17 +922,21 @@
 
     function waitUntilPopupLoggedIn() {
         if ((jQuery('.login-popup[style*=block]').length) > 0) {
-            if (popupWindow.length == 0) {
-                if (popupWindow && popupWindow.location && popupWindow.location.href 
-                        && (popupWindow.location.href).indexOf('loggedIn.html') != -1) {
-                    popupWindow.close();
-                    window.focus();
-                    placeholderFunction();
-                    exitLogin();
+            try {
+                if (popupWindow.length == 0) {
+                    if (popupWindow && popupWindow.location && popupWindow.location.href 
+                        && ((String(popupWindow.location.href)).indexOf('loggedIn.html')) != -1) {
+                        popupWindow.close();
+                        window.focus();
+                        placeholderFunction();
+                        exitLogin();
+                    } else {
+                        setTimeout(waitUntilPopupLoggedIn, 1000);
+                    }
                 } else {
                     setTimeout(waitUntilPopupLoggedIn, 1000);
                 }
-            } else {
+            } catch(err) {
                 setTimeout(waitUntilPopupLoggedIn, 1000);
             }
         }
@@ -1072,8 +1135,8 @@
         var updateData = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="'
                 + objectUrl
                 + '" ><rdf:type rdf:resource="http://www.openannotation.org/ns/Annotation"/>' 
-								+ '<rdf:type rdf:resource="http://austese.net/ns/annotation/Alignment"/>' 
-								+ '<hasTarget xmlns="http://www.openannotation.org/ns/" rdf:resource="'
+                + '<rdf:type rdf:resource="http://austese.net/ns/annotation/Alignment"/>' 
+                + '<hasTarget xmlns="http://www.openannotation.org/ns/" rdf:resource="'
                 + imageUrl
                 + '#xywh='
                 + x
