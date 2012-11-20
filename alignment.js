@@ -645,7 +645,7 @@
 
         var inWhite = false;
         while (idx < st.length) {
-            if (this.isWhiteSpace(st.charCodeAt(idx))) {
+            if (isWhiteSpace(st.charCodeAt(idx))) {
                 if (inWhite) {
                     ++idx;
                     continue;
@@ -668,20 +668,20 @@
                 .contentWindow.document.body.createTextRange();
         range.moveToElementText(element);
         range.setEndPoint("EndToStart", textRange);
-        var rangeLength = this.normalizedLength(range.text);
+        var rangeLength = normalizedLength(range.text);
         var node = element.firstChild;
 
         while (node) {
             switch(node.nodeType) {
                 case 3 :
-                    var nodeLength = this._normalizedLength(node.data);
+                    var nodeLength = normalizedLength(node.data);
                     if (nodeLength >= rangeLength) {
                         return {node: node, offset: rangeLength};
                     }
                     rangeLength -= nodeLength;
                     break;
                 case 1 :
-                    rangeLength -= this._normalizedLength(node.innerText);
+                    rangeLength -= normalizedLength(node.innerText);
                     break;
             }
             node = node.nextSibling;
