@@ -1,6 +1,7 @@
 <?php
 $module_path = drupal_get_path('module', 'alignment');
 ?>
+<script type="text/javascript" src="/<?php print $module_path; ?>/rangy-core.js"></script>
 <div class="login-popup" id="login-box" style="margin-top: -83px; margin-left: -122px; ">
     <a id="annoClose" class="close" href="#">
         <i class="icon-remove"></i>

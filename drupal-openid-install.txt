@@ -1,76 +1,110 @@
 1. Install default drupal openid module
 
-2. (Optional) Add basic drupal page for openid only login.
+2. (Optional) Update /modules/openid/openid.js
 
-<form action="/user" method="post" id="user-login" accept-charset="UTF-8">
-  <div class="control-group form-type-textfield form-item-openid-identifier">
-    <label for="edit-openid-identifier" class="control-label">Log in using OpenID </label>
-    <div class="controls"> 
-      <input type="text" id="edit-openid-identifier" name="openid_identifier" value="https://www.google.com/accounts/o8/id" size="60" maxlength="255" class="form-text" />
-      <p class="help-block">
-        <a href="http://openid.net/">What is OpenID?</a>
-      </p>
-    </div>
-  </div>
-  <input type="hidden" name="form_build_id" value="">
-  <input type="hidden" name="form_id" value="user_login">
-  <input type="hidden" name="openid.return_to" value="http://localhost/openid/authenticate?destination=user">
-  <button class="btn form-submit" id="edit-submit" name="op" value="Log in">Log in</button>
-</form>
+Drupal.behaviors.openid = {
+  attach: function (context) {
+    var loginElements = $('.form-item-name, .form-item-pass, li.openid-link');
+    var openidElements = $('.form-item-openid-identifier, li.user-link');
+    var cookie = $.cookie('Drupal.visitor.openid_identifier');
+
+    $('.page-header').text('Login using OpenID');
+    $('.user-link').children().text('Log in using username/password');
+
+    // This behavior attaches by ID, so is only valid once on a page.
+    if (!$('#edit-openid-identifier.openid-processed').length) {
+      if (cookie) {
+        $('#edit-openid-identifier').val(cookie);
+      }
+      
+      $('#edit-openid-identifier').addClass('openid-processed');
+      loginElements.hide();
+      // Use .css('display', 'block') instead of .show() to be Konqueror friendly.
+      openidElements.css('display', 'block');
+    }
+
+    $('li.openid-link:not(.openid-processed)', context)
+      .addClass('openid-processed')
+      .click(function () {
+         loginElements.hide();
+         openidElements.css('display', 'block');
+        // Remove possible error message.
+        $('#edit-name, #edit-pass').removeClass('error');
+        $('div.messages.error').hide();
+        $('.page-header').text('Login using OpenID');
+        // Set focus on OpenID Identifier field.
+        $('#edit-openid-identifier')[0].focus();
+        return false;
+      });
+    $('li.user-link:not(.openid-processed)', context)
+      .addClass('openid-processed')
+      .click(function () {
+         openidElements.hide();
+         loginElements.css('display', 'block');
+        // Clear OpenID Identifier field and remove possible error message.
+        $('#edit-openid-identifier').val('').removeClass('error');
+        $('div.messages.error').css('display', 'block');
+        $('.page-header').text('Login');
+        // Set focus on username field.
+        $('#edit-name')[0].focus();
+        return false;
+      });
+  }
+};
 
 3. Update OpenID.xml. Replace,
 
 <bean class="au.edu.diasb.springsecurity.ExternalProviderConfiguration">
-		<property name="domain" value="openid:google"/>
-		<property name="defaultAuthorities" value="ROLE_USER" />
-		<property name="providerRegex" 
-				value="https://www.google.com/accounts/o8/id\?.+" />
-		<property name="preferredUserNameAttributes" 
-				value="name,lastName,firstName,email2,email"/>
-		<property name="iconUri"
-				value="#{emmetProps.getProperty('emmet.images')}/google.png"/>
+  <property name="domain" value="openid:google"/>
+    <property name="defaultAuthorities" value="ROLE_USER" />
+    <property name="providerRegex" 
+        value="https://www.google.com/accounts/o8/id\?.+" />
+    <property name="preferredUserNameAttributes" 
+        value="name,lastName,firstName,email2,email"/>
+    <property name="iconUri"
+        value="#{emmetProps.getProperty('emmet.images')}/google.png"/>
 </bean>
-								
+
 with,
-								
+
 <bean class="au.edu.diasb.springsecurity.ExternalProviderConfiguration">
-		<property name="domain" value="openid:google"/>
-		<property name="defaultAuthorities" value="ROLE_USER, ROLE_ORE" />
-		<property name="providerRegex" 
-				value="https://www.google.com/accounts/o8/id\?.+" />
-		<property name="preferredUserNameAttributes" 
-				value="name,lastName,firstName,email2,email"/>
-		<property name="iconUri"
-				value="#{emmetProps.getProperty('emmet.images')}/google.png"/>
+    <property name="domain" value="openid:google"/>
+    <property name="defaultAuthorities" value="ROLE_USER, ROLE_ORE" />
+    <property name="providerRegex" 
+        value="https://www.google.com/accounts/o8/id\?.+" />
+    <property name="preferredUserNameAttributes" 
+        value="name,lastName,firstName,email2,email"/>
+    <property name="iconUri"
+        value="#{emmetProps.getProperty('emmet.images')}/google.png"/>
 </bean>
 
 4. (Recommended) Update Emmet-security-lorestore.xml. Replace,
 
-	<sec:openid-attribute name="email" 
-			 type="http://schema.openid.net/contact/email" 
-			 required="true" count="2"/>
-	<sec:openid-attribute name="name" 
-			 type="http://schema.openid.net/namePerson/friendly"
-			 required="true"/>
-	<sec:openid-attribute name="email2" 
-			 type="http://axschema.org/contact/email" required="true"/>
-	<sec:openid-attribute name="firstName" 
-			 type="http://axschema.org/namePerson/first" required="true"/>
-	<sec:openid-attribute name="lastName" 
-			 type="http://axschema.org/namePerson/last" required="true"/>
+  <sec:openid-attribute name="email" 
+      type="http://schema.openid.net/contact/email" 
+      required="true" count="2"/>
+  <sec:openid-attribute name="name" 
+      type="http://schema.openid.net/namePerson/friendly"
+      required="true"/>
+  <sec:openid-attribute name="email2" 
+      type="http://axschema.org/contact/email" required="true"/>
+  <sec:openid-attribute name="firstName" 
+      type="http://axschema.org/namePerson/first" required="true"/>
+  <sec:openid-attribute name="lastName" 
+      type="http://axschema.org/namePerson/last" required="true"/>
 
 with,
 
- <sec:openid-attribute name="email" 
-			 type="http://schema.openid.net/contact/email"
-			 count="2"/>
-	<sec:openid-attribute name="name" 
-			 type="http://schema.openid.net/namePerson/friendly"/>
-	<sec:openid-attribute name="email2"
-			 type="http://axschema.org/contact/email"/>
-	<sec:openid-attribute name="firstName"
-			 type="http://axschema.org/namePerson/first"/>
-	<sec:openid-attribute name="lastName"
-			 type="http://axschema.org/namePerson/last"/>
-			 
+<sec:openid-attribute name="email" 
+      type="http://schema.openid.net/contact/email"
+      count="2"/>
+  <sec:openid-attribute name="name" 
+      type="http://schema.openid.net/namePerson/friendly"/>
+  <sec:openid-attribute name="email2"
+      type="http://axschema.org/contact/email"/>
+  <sec:openid-attribute name="firstName"
+      type="http://axschema.org/namePerson/first"/>
+  <sec:openid-attribute name="lastName"
+      type="http://axschema.org/namePerson/last"/>
+
 This stops lorestore from requiring a reauthorization each time it contacts openid.

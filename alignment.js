@@ -10,7 +10,7 @@
     function refreshAnnotations(imageUrl, textUrl) {
         var imageUrl = qualifyURL(imageUrl);
         var textUrl = qualifyURL(textUrl);
-				
+    
         jQuery('#text-input').on('load',function(e) {
             jQuery('#image-input').on('load',function(e) {
                 // Remove onload functions
@@ -265,39 +265,23 @@
                 .getElementById('injected-text');
 
         var selectedText;
-       
-        if (text_iframe.contentWindow.getSelection
-                && text_iframe.contentWindow.document.createRange) {
-            var sel = text_iframe.contentWindow.getSelection();
-            var range = text_iframe.contentWindow.document.createRange();
-            var startElement = lookupElementByXPath(startOffsetXpath);
-            var endElement = lookupElementByXPath(endOffsetXpath);
-            if (startElement == null || endElement == null) {
-                rectDiv.remove();
-                return;
-            }
-            range.selectNodeContents(injectedText);
-            range.setStart(startElement, startOffset);
-            range.setEnd(endElement, endOffset);
-            selectedText = range.toString();
-            sel.removeAllRanges();
-            sel.addRange(range);
-        } else if (text_iframe.contentWindow.document.selection
-                && text_iframe.contentWindow.document.body.createTextRange) {
-            var textRange = text_iframe.contentWindow.document.body
-                    .createTextRange();
-            var startElement = lookupElementByXPath(startOffsetXpath);
-            var endElement = lookupElementByXPath(endOffsetXpath);
-            if (startElement == null || endElement == null) {
-                rectDiv.remove();
-                return;
-            }
-            textRange.moveToElementText(injectedText);
-            textRange.setStart(startElement, startOffset);
-            textRange.setEnd(endElement, endOffset);
-            selectedText = textRange.toString();
-            textRange.select();
+        var startElement = lookupElementByXPath(startOffsetXpath);
+        var endElement = lookupElementByXPath(endOffsetXpath);
+        
+        if (startElement == null || endElement == null) {
+            rectDiv.remove();
+            return;
         }
+    
+        var range;
+        var sel = text_iframe.contentWindow.rangy.getSelection();
+        var range = text_iframe.contentWindow.rangy.createRange();
+        range.selectNodeContents(injectedText);
+        range.setStart(startElement, startOffset);
+        range.setEnd(endElement, endOffset);
+        selectedText = range.toString();
+        sel.removeAllRanges();
+        sel.addRange(range);
 
         range.collapse(true);
 
@@ -348,7 +332,7 @@
         image.setAttribute('objectUrl', objectUrl);
         image.setAttribute('src', 'resources/link_black.png');
         image.setAttribute('onclick',
-                'highlightImage(this); event.stopPropagation();');
+                'highlightImage(this); stopPropagation(event);');
         image.setAttribute('startOffset', startOffset);
         image.setAttribute('startOffsetXpath', startOffsetXpath);
         image.setAttribute('endOffset', endOffset);
@@ -651,26 +635,87 @@
         }
     }
 
-    // Get the current selected text area in memory from the selected text in
-    // the
-    // text iframe
+    function isWhiteSpace(ch) {
+        return ((ch == 0x08) || (ch == 0x0a) || (ch == 0x0d) || (ch == 0x20));
+    }
+
+    function normalizedLength(st)  {
+        var len = 0;
+        var idx = 0;
+
+        var inWhite = false;
+        while (idx < st.length) {
+            if (this.isWhiteSpace(st.charCodeAt(idx))) {
+                if (inWhite) {
+                    ++idx;
+                    continue;
+                }
+                ++len;
+                ++idx;
+                inWhite = true;
+                continue;
+            }
+            ++len;
+            ++idx;
+            inWhite = false;
+        }
+        return len;
+    }
+
+    function getPosition(textRange) {
+        var element = textRange.parentElement();
+        var range = document.getElementById('text-input')
+                .contentWindow.document.body.createTextRange();
+        range.moveToElementText(element);
+        range.setEndPoint("EndToStart", textRange);
+        var rangeLength = this.normalizedLength(range.text);
+        var node = element.firstChild;
+
+        while (node) {
+            switch(node.nodeType) {
+                case 3 :
+                    var nodeLength = this._normalizedLength(node.data);
+                    if (nodeLength >= rangeLength) {
+                        return {node: node, offset: rangeLength};
+                    }
+                    rangeLength -= nodeLength;
+                    break;
+                case 1 :
+                    rangeLength -= this._normalizedLength(node.innerText);
+                    break;
+            }
+            node = node.nextSibling;
+        }
+        throw ('Unable to create locator for this selection. Please expand');
+    }
+
+    // Get the current selected text area in memory from the selected text in the text iframe
     // CREATE/EDIT MODE
     function updateTextSelection() {
         var text_iframe = document.getElementById('text-input');
         var container = text_iframe.contentWindow.document
                 .getElementById('injected-text');
 
-        var userSelection;
-        if (text_iframe.contentWindow.getSelection) {
-            userSelection = text_iframe.contentWindow.getSelection();
-        } else if (text_iframe.contentWindow.document.selection) {
-            userSelection = text_iframe.contentWindow.document.selection
-                    .createRange();
-        }
+        var userSelection = text_iframe.contentWindow.rangy.getSelection();
+        var range = userSelection.getRangeAt(0);
+        var selectedText = userSelection.toString();
 
-        var selectedText = userSelection;
-        if (userSelection.text) {
-            selectedText = userSelection.text;
+        if (! text_iframe.contentWindow.getSelection) {	
+            var nativeRange = text_iframe.contentWindow.document.selection.createRange();
+
+            var beginRange = nativeRange.duplicate();
+            beginRange.collapse(true);
+            var position = getPosition(beginRange);
+            range.startContainer = position.node;
+            range.startOffset = position.offset;
+
+            var endRange = nativeRange.duplicate();
+            endRange.collapse(false);
+            position = getPosition(endRange);
+            range.endContainer = position.node;
+            range.endOffset = position.offset;
+
+            selectedText = userSelection.nativeSelection.createRange().text;
         }
 
         if (selectedText.toString().length == 0) {
@@ -690,9 +735,7 @@
             return;
         }
 
-        if (jQuery(userSelection.anchorNode).parents().index(
-                jQuery(text_iframe.contentWindow.document
-                        .getElementById('injected-text'))) == -1) {
+        if (jQuery(userSelection.anchorNode).parents().index(jQuery(container)) == -1) {
             return;
         }
 
@@ -700,17 +743,6 @@
                 .getElementById('link_image');
         if (selectedImage) {
             selectedImage.parentNode.removeChild(selectedImage);
-        }
-
-        var range;
-        if (userSelection.getRangeAt) {
-            range = userSelection.getRangeAt(0);
-        } else {
-            var range = document.createRange();
-            range
-                    .setStart(userSelection.anchorNode,
-                            userSelection.anchorOffset);
-            range.setEnd(userSelection.focusNode, userSelection.focusOffset);
         }
 
         var startOffsetXpath = createXPathFromElement(range.startContainer);
@@ -761,26 +793,18 @@
         image.setAttribute('width', '16');
         image.setAttribute('src', 'resources/link_black.png');
         image.setAttribute('onclick',
-                'highlightImage(this); event.stopPropagation();');
+                'highlightImage(this); stopPropagation(event);');
         image.setAttribute('startOffset', startOffset);
         image.setAttribute('startOffsetXpath', startOffsetXpath);
         image.setAttribute('endOffset', endOffset);
         image.setAttribute('endOffsetXpath', endOffsetXpath);
         svg_links.appendChild(image);
-        if (text_iframe.contentWindow.getSelection) {
-            if (text_iframe.contentWindow.getSelection().empty) {// Chrome
-                text_iframe.contentWindow.getSelection().empty();
-            } else if (text_iframe.contentWindow.getSelection().removeAllRanges) {// Firefox
-                text_iframe.contentWindow.getSelection().removeAllRanges();
-            }
-        } else if (text_iframe.contentWindow.document.selection) {// IE?
-            text_iframe.contentWindow.document.selection.empty();
-        }
+
+        text_iframe.contentWindow.rangy.getSelection().removeAllRanges();
     }
 
     // Retrieve XPath for element
     function createXPathFromElement(elm) {
-        var allNodes = document.getElementsByTagName('*');
         var segs = [];
         if (elm.nodeType == 3) {
             for (i = 1, sib = elm.previousSibling; sib; sib = sib.previousSibling) {
@@ -793,11 +817,11 @@
         }
         while (elm && elm.nodeType == 1) {
             for (i = 1, sib = elm.previousSibling; sib; sib = sib.previousSibling) {
-                if (sib.localName == elm.localName) {
+                if (sib.nodeName == elm.nodeName) {
                     i++;
                 }
             }
-            segs.unshift(elm.localName.toLowerCase() + '[' + i + ']');
+            segs.unshift(elm.nodeName.toLowerCase() + '[' + i + ']');
             elm = elm.parentNode;
         }
         return segs.length ? '/' + segs.join('/') : null;
@@ -805,12 +829,76 @@
 
     // Retrieve element at XPath
     function lookupElementByXPath(path) {
-        var evaluator = new XPathEvaluator();
-        var result = evaluator.evaluate(
-            path,
-            document.getElementById('text-input').contentWindow.document.documentElement,
-            null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-        return result.singleNodeValue;
+        var aNode = document.getElementById('text-input').contentWindow.document.documentElement;
+        var xpe = aNode.ownerDocument || aNode;
+
+        if (xpe.createNSResolver) {
+            var evaluator = new XPathEvaluator();
+            var result = evaluator.evaluate(
+                path,
+                document.getElementById('text-input').contentWindow.document.documentElement,
+                null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+
+            return result.singleNodeValue;
+        } else {
+            var paths = path.split('/');
+            var node = document.getElementById('text-input').contentWindow.document.getElementById('injected-text');
+            var returnNode = null;
+
+            for (var i = 0; i < paths.length; i++) {
+                if (paths[i] != "") {
+                    var patt1 = "\\[\\d*\\]";
+                    var index = -1;
+                    if (paths[i].match(patt1)) {
+                        index = paths[i].match(patt1)[0];
+                        index = parseInt(index.substring(1, index.length - 1));
+                    }
+
+                    var patt2 = ".*\\[";
+                    var tagname = -1;
+                    if (paths[i].match(patt2)) {
+                        tagname = paths[i].match(patt2)[0];
+                        tagname = tagname.substring(0, tagname.length - 1);
+                    }
+
+                    var children = node.childNodes;
+
+                    if (tagname == "text()") {
+                        for (var j = 0; j < children.length; j++) {
+                            if (!children[j].tagName) {
+                                if (index == 1) {
+                                    node = children[j];
+                                    returnNode = node;
+                                    j = children.length;
+                                } else {
+                                    index = index - 1;
+                                }
+                            }
+                        }  
+                        if (j != (children.length + 1)) {
+                            returnNode = null;
+                        }
+                    } else {
+                        for (var j = 0; j < children.length; j++) {
+                            if (children[j].tagName && (children[j].tagName.toLowerCase() == tagname)) {
+                                if (index == 1) {
+                                    node = children[j];
+                                    returnNode = node;
+                                    j = children.length;
+                                } else {
+                                    index = index - 1;
+                                }
+                            }
+                        }
+                        if (j != (children.length + 1)) {
+                            returNode = null;
+                        }
+                    }
+                }
+            }
+            return returnNode;
+        }
+        return null;
     }
 
     function getCookie(c_name) {
@@ -908,7 +996,7 @@
             'margin-top' : -popMargTop,
             'margin-left' : -popMargLeft
         });
-    
+
         jQuery('body').append('<div id="mask"></div>');
         jQuery('#mask').fadeIn(300);
     }
@@ -1008,8 +1096,8 @@
             },
             success : function(res) {
                 loggedIn = true;
-                objectUrl = res.childNodes[1].childNodes[1]
-                        .getAttribute('rdf:about');
+                objectUrl = jQuery(jQuery(res).children()[0])
+                        .children()[0].getAttribute('rdf:about');
             },
             error : function(xhr, testStatus, error) {
                 loggedIn = false;

@@ -13,6 +13,16 @@ window.onload = function() {
         url = decodeURIComponent(getUrlVars()["url"]);
     } 
 
+    $.get(url, function (data) { 
+        var injectedText = jQuery('#injected-text');
+        data = data.replace('\'', '\\\'');
+        data = '\'' + data + '\'';
+        injectedText.html(data);
+        var newHTML = injectedText.html();
+        injectedText.html(newHTML.substr(1,newHTML.length-2));
+        setTimeout(iResize, 50);
+    });
+
     jQuery('#injected-text').load(url, function() {
         setTimeout(iResize, 50);
     });
@@ -65,47 +75,100 @@ function focusText(img) {
 function focusTextOffsetsWithXPaths(startOffset, startOffsetXpath, endOffset, endOffsetXpath) {
     var injectedText = document.getElementById('injected-text');
 
-    if (window.getSelection && document.createRange) {
-        var sel = window.getSelection();
-        var range = document.createRange();
-        range.selectNodeContents(injectedText);
-        range.setStart(lookupElementByXPath(startOffsetXpath), startOffset);
-        range.setEnd(lookupElementByXPath(endOffsetXpath), endOffset);
-        sel.removeAllRanges();
-        sel.addRange(range);
-    } else if (document.selection && document.body.createTextRange) {
-        var textRange = document.body.createTextRange();
-        textRange.moveToElementText(injectedText);
-        textRange.setStart(lookupElementByXPath(startOffsetXpath), startOffset);
-        textRange.setEnd(lookupElementByXPath(endOffsetXpath), endOffset);
-        textRange.select();
-    }
+    var startElement = lookupElementByXPath(startOffsetXpath);
+    var endElement = lookupElementByXPath(endOffsetXpath);
+
+    var sel = window.rangy.getSelection();
+    var range = rangy.createRange();
+    range.selectNode(startElement);
+    range.setStart(startElement, startOffset);
+    range.setEnd(endElement, endOffset);
+    sel.removeAllRanges();
+    sel.addRange(range);
 }
 
 function lookupElementByXPath(path) {
-    var evaluator = new XPathEvaluator();
-    var result = evaluator.evaluate(path, document.documentElement, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-    return result.singleNodeValue;
+    var aNode = document.documentElement;
+    var xpe = aNode.ownerDocument || aNode;
+
+    if (xpe.createNSResolver) {
+        var evaluator = new XPathEvaluator();
+        var result = evaluator.evaluate(
+            path,
+            document.documentElement,
+            null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+
+        return result.singleNodeValue;
+    } else {    
+        var paths = path.split('/');
+        var node = document.getElementById('injected-text');
+        var returnNode = null;
+
+        for (var i = 0; i < paths.length; i++) {
+            if (paths[i] != "") {
+                var patt1 = "\\[\\d*\\]";
+                var index = -1;
+                if (paths[i].match(patt1)) {
+                    index = paths[i].match(patt1)[0];
+                    index = parseInt(index.substring(1, index.length - 1));
+                }
+
+                var patt2 = ".*\\[";
+                var tagname = -1;
+                if (paths[i].match(patt2)) {
+                    tagname = paths[i].match(patt2)[0];
+                    tagname = tagname.substring(0, tagname.length - 1);
+                }
+
+                var children = node.childNodes;
+
+                if (tagname == "text()") {
+                    for (var j = 0; j < children.length; j++) {
+                        if (!children[j].tagName) {
+                            if (index == 1) {
+                                node = children[j];
+                                returnNode = node;
+                                j = children.length;
+                            } else {
+                                index = index - 1;
+                            }
+                        }
+                    }
+                    if (j != (children.length + 1)) {
+                        returnNode = null;
+                    }
+                } else {
+                    for (var j = 0; j < children.length; j++) {
+                        if (children[j].tagName && (children[j].tagName.toLowerCase() == tagname)) {
+                            if (index == 1) {
+                                node = children[j];
+                                returnNode = node;
+                                j = children.length;
+                            } else {
+                                index = index - 1;
+                            }
+                        }
+                    }
+                    if (j != (children.length + 1)) {
+                        returnNode = null;
+                    }
+                }
+            }
+        }
+        return returnNode;
+    }
+    return null;
 }
 
 function focusTextOffsets(startOffset, endOffset) {
     var injectedText = document.getElementById('injected-text');
-
-    if (window.getSelection && document.createRange) {
-        var sel = window.getSelection();
-        var range = document.createRange();
-        range.selectNodeContents(injectedText);
-        range.setStart(injectedText.childNodes[0], startOffset);
-        range.setEnd(injectedText.childNodes[0], endOffset);
-        sel.removeAllRanges();
-        sel.addRange(range);
-    } else if (document.selection && document.body.createTextRange) {
-        var textRange = document.body.createTextRange();
-        textRange.moveToElementText(injectedText);
-        textRange.setStart(injectedText.childNodes[0], startOffset);
-        textRange.setEnd(injectedText.childNodes[0], endOffset);
-        textRange.select();
-    }
+    var sel = window.rangy.getSelection();
+    var range = rangy.createRange();
+    range.selectNodeContents(injectedText);
+    range.setStart(injectedText.childNodes[0], startOffset);
+    range.setEnd(injectedText.childNodes[0], endOffset);
+    sel.removeAllRanges();
+    sel.addRange(range);
 }
 
 function highlightImage(img, sync) {
@@ -159,5 +222,13 @@ function clearSelectedText() {
         }
     } else if (document.selection) {
         document.selection.empty();
+    }
+}
+
+function stopPropagation(event) {
+    if (event.stopPropagation) {
+        event.stopPropagation();
+    } else {
+        window.event.cancelBubble = true;
     }
 }
