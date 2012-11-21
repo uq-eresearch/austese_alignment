@@ -73,16 +73,19 @@ function focusText(img) {
 }
 
 function focusTextOffsetsWithXPaths(startOffset, startOffsetXpath, endOffset, endOffsetXpath) {
-    var injectedText = document.getElementById('injected-text');
+    var containerDiv = document.getElementById('container-div-2');
 
     var startElement = lookupElementByXPath(startOffsetXpath);
     var endElement = lookupElementByXPath(endOffsetXpath);
 
     var sel = window.rangy.getSelection();
     var range = rangy.createRange();
-    range.selectNode(startElement);
-    range.setStart(startElement, startOffset);
-    range.setEnd(endElement, endOffset);
+
+    range.selectNodeContents(containerDiv);
+    if (startElement != containerDiv || endElement != containerDiv) {
+        range.setStart(startElement, startOffset);
+        range.setEnd(endElement, endOffset);
+    }
     sel.removeAllRanges();
     sel.addRange(range);
 }
@@ -96,12 +99,14 @@ function lookupElementByXPath(path) {
         var result = evaluator.evaluate(
             path,
             document.documentElement,
-            null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+            null,
+            XPathResult.FIRST_ORDERED_NODE_TYPE,
+            null);
 
         return result.singleNodeValue;
-    } else {    
+    } else {
         var paths = path.split('/');
-        var node = document.getElementById('injected-text');
+        var node = document.documentElement;
         var returnNode = null;
 
         for (var i = 0; i < paths.length; i++) {

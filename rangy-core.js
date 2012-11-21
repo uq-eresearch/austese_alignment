@@ -494,15 +494,15 @@ rangy.createModule("DomUtil", function(api, module) {
         if (nodeA == nodeB) {
 
             // Case 1: nodes are the same
-            return offsetA === offsetB ? 0 : (offsetA < offsetB) ? 1 : -1;
+            return offsetA === offsetB ? 0 : (offsetA < offsetB) ? -1 : 1;
         } else if ( (nodeC = getClosestAncestorIn(nodeB, nodeA, true)) ) {
 
             // Case 2: node C (container B or an ancestor) is a child node of A
-            return offsetA <= getNodeIndex(nodeC) ? 1 : -1;
+            return offsetA <= getNodeIndex(nodeC) ? -1 : 1;
         } else if ( (nodeC = getClosestAncestorIn(nodeA, nodeB, true)) ) {
 
             // Case 3: node C (container A or an ancestor) is a child node of B
-            return getNodeIndex(nodeC) < offsetB  ? 1 : -1;
+            return getNodeIndex(nodeC) < offsetB  ? -1 : 1;
         } else {
 
             // Case 4: containers are siblings or descendants of siblings

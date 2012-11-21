@@ -261,10 +261,10 @@
 
         var verticalOffset = 30;
         var text_iframe = document.getElementById('text-input');
-        var injectedText = text_iframe.contentWindow.document
-                .getElementById('injected-text');
+        var containerDiv = text_iframe.contentWindow.document
+                .getElementById('container-div-2');
 
-        var selectedText;
+        var selectedText = "No selection: alignment will default to entire text";
         var startElement = lookupElementByXPath(startOffsetXpath);
         var endElement = lookupElementByXPath(endOffsetXpath);
         
@@ -276,10 +276,16 @@
         var range;
         var sel = text_iframe.contentWindow.rangy.getSelection();
         var range = text_iframe.contentWindow.rangy.createRange();
-        range.selectNodeContents(injectedText);
-        range.setStart(startElement, startOffset);
-        range.setEnd(endElement, endOffset);
-        selectedText = range.toString();
+        range.selectNodeContents(containerDiv);
+        if (startElement != containerDiv || endElement != containerDiv) {
+            range.setStart(startElement, startOffset);
+            range.setEnd(endElement, endOffset);
+            if (range.textRange) {
+                selectedText = range.textRange.text
+            } else {
+                selectedText = range.toString();
+            }
+        }
         sel.removeAllRanges();
         sel.addRange(range);
 
@@ -700,6 +706,33 @@
         var range = userSelection.getRangeAt(0);
         var selectedText = userSelection.toString();
 
+        if (range.textRange) {
+            selectedText = range.textRange.text
+        } else {
+            selectedText = range.toString();
+        }
+
+        if (selectedText.toString().length == 0) {
+            var selectedImage = text_iframe.contentWindow.document
+                    .getElementById('link_image');
+            if (selectedImage) {
+                selectedImage.parentNode.removeChild(selectedImage);
+            }
+
+            document.getElementById('textStartOffset').value = 0;
+            document.getElementById('startOffsetXpath').value = '/html[1]/body[1]/div[2]';
+            document.getElementById('textEndOffset').value = 1;
+            document.getElementById('endOffsetXpath').value = '/html[1]/body[1]/div[2]';
+
+            jQuery('#text-selection').html(
+                    "No selection: alignment will default to entire text");
+            return;
+        }
+
+        if (jQuery(userSelection.anchorNode).parents().index(jQuery(container)) == -1) {
+            return;
+        }
+
         if (! text_iframe.contentWindow.getSelection) {	
             var nativeRange = text_iframe.contentWindow.document.selection.createRange();
 
@@ -714,29 +747,6 @@
             position = getPosition(endRange);
             range.endContainer = position.node;
             range.endOffset = position.offset;
-
-            selectedText = userSelection.nativeSelection.createRange().text;
-        }
-
-        if (selectedText.toString().length == 0) {
-            var selectedImage = text_iframe.contentWindow.document
-                    .getElementById('link_image');
-            if (selectedImage) {
-                selectedImage.parentNode.removeChild(selectedImage);
-            }
-
-            document.getElementById('textStartOffset').value = 0;
-            document.getElementById('startOffsetXpath').value = '/html[1]/body[1]/div[2]';
-            document.getElementById('textEndOffset').value = 2;
-            document.getElementById('endOffsetXpath').value = '/html[1]/body[1]/div[2]';
-
-            jQuery('#text-selection').html(
-                    "No selection: alignment will default to entire text");
-            return;
-        }
-
-        if (jQuery(userSelection.anchorNode).parents().index(jQuery(container)) == -1) {
-            return;
         }
 
         var selectedImage = text_iframe.contentWindow.document
@@ -842,7 +852,7 @@
             return result.singleNodeValue;
         } else {
             var paths = path.split('/');
-            var node = document.getElementById('text-input').contentWindow.document.getElementById('injected-text');
+            var node = document.getElementById('text-input').contentWindow.document.documentElement;
             var returnNode = null;
 
             for (var i = 0; i < paths.length; i++) {
@@ -891,7 +901,7 @@
                             }
                         }
                         if (j != (children.length + 1)) {
-                            returNode = null;
+                            returnNode = null;
                         }
                     }
                 }
