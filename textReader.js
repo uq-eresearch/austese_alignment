@@ -176,7 +176,7 @@ function focusTextOffsets(startOffset, endOffset) {
     sel.addRange(range);
 }
 
-function highlightImage(img, sync) {
+function highlightImage(img, sync, pageX, pageY) {
     if (img.getAttribute('selected') != 'selected') {
         clearSelected();
         img.src = 'resources/link_yellow.png';
@@ -190,6 +190,26 @@ function highlightImage(img, sync) {
             parent.window.jQuery.fn.setObjectUrl(img.getAttribute("objectUrl"));
             parent.window.jQuery.fn.cycleImageZIndex(img.getAttribute("id").substring(5));
             parent.window.jQuery.fn.setSelectedImage(img.getAttribute("objectUrl"), img.getAttribute('index'));
+        }
+    } else {
+        clearSelected();
+        
+        var nextElement = null;
+        for (var i = 0; i < 1000 && nextElement == null; i++) {
+            nextElement = document.elementFromPoint(pageX, pageY);
+        }
+        
+        nextElement.src = 'resources/link_yellow.png';
+        nextElement.setAttribute('selected', 'selected');
+
+        parent.window.jQuery.fn.cycleTextZIndex(nextElement.getAttribute("id").substring(5));
+
+        focusText(nextElement);
+
+        if (getUrlVars()["editable"] != 'true') {
+            parent.window.jQuery.fn.setObjectUrl(nextElement.getAttribute("objectUrl"));
+            parent.window.jQuery.fn.cycleImageZIndex(nextElement.getAttribute("id").substring(5));
+            parent.window.jQuery.fn.setSelectedImage(nextElement.getAttribute("objectUrl"), nextElement.getAttribute('index'));
         }
     }
 }

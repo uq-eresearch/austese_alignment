@@ -82,12 +82,11 @@ jQuery(document).ready(function() {
           var newIndices = diff(this.displayedIndices, displayedPages);
           var oldIndices = diff(displayedPages, this.displayedIndices);
           displayedPages = this.displayedIndices;
-
-          if (getUrlVars()["editable"] == 'true') {      
+          if (getUrlVars()["editable"] == 'true') {          
             for (var i = 0; i < oldIndices.length; i++) {
               delete areaSelect['#pagediv' + oldIndices[i]];
             }
-            for (var i = 0; i < newIndices.length; i++) {        
+            for (var i = 0; i < newIndices.length; i++) {   
               var area = jQuery('#pagediv' + newIndices[i]).children().imgAreaSelect({
                 handles: true,
                 instance: true,
@@ -155,19 +154,19 @@ jQuery(document).ready(function() {
 
 function diff(array1, array2) {
     var res = [];
-		for (var i = 0; i < array1.length; i++) {
+    for (var i = 0; i < array1.length; i++) {
       var val = array1[i];
-			var indexOf = -1;
-			for (var j = 0; j < array2.length && indexOf == -1; j++) {
-			  if (array2[j] == val){ 
-				  indexOf = j;
-				}
-			}
-			if (indexOf > -1) {
-			  res.push(val);
-			}
+      var indexOf = -1;
+      for (var j = 0; j < array2.length && indexOf == -1; j++) {
+        if (array2[j] == val){ 
+          indexOf = j;
+        }
+      }
+      if (indexOf == -1) {
+        res.push(val);
+      }
     }
- 
+
     return res;
 }
 
@@ -231,12 +230,10 @@ function selectionVisible() {
     return (selection) && (selection.getSelection().width > 0 || selection.getSelection().height > 0);
 }
 
-function focusImageSelection(img, sync) {
+function focusImageSelection(img, sync, pageX, pageY) {
     if (img.getAttribute('selected') != 'selected') {
         clearSelectedImage();
-        img.style.border = '3px solid #CC66CC';
-        img.style.backgroundColor = 'rgb(127,0,127)';
-        img.setAttribute('selected', 'selected');
+        highlightImage(img);
 
         parent.window.jQuery.fn.cycleImageZIndex(img.getAttribute("id").substring(6));
 
@@ -244,6 +241,22 @@ function focusImageSelection(img, sync) {
             parent.window.jQuery.fn.setObjectUrl(img.getAttribute("objectUrl"));
             parent.window.jQuery.fn.cycleTextZIndex(img.getAttribute("id").substring(6));
             parent.window.jQuery.fn.setSelectedText(img.getAttribute("objectUrl"));
+        }
+    } else {
+        clearSelectedImage();
+        
+        var nextElement = null;
+        for (var i = 0; i < 1000 && nextElement == null; i++) {
+            nextElement = document.elementFromPoint(pageX, pageY);
+        }
+        highlightImage(nextElement);
+
+        parent.window.jQuery.fn.cycleImageZIndex(nextElement.getAttribute("id").substring(6));
+
+        if (sync == true) {
+            parent.window.jQuery.fn.setObjectUrl(nextElement.getAttribute("objectUrl"));
+            parent.window.jQuery.fn.cycleTextZIndex(nextElement.getAttribute("id").substring(6));
+            parent.window.jQuery.fn.setSelectedText(nextElement.getAttribute("objectUrl"));
         }
     }
 }
@@ -272,19 +285,28 @@ function highlightImageWhenAppears(objectUrl, loopCount) {
 }
 
 function highlightImage(img) {
-    img.style.border = '3px solid #CC66CC';
+    if (img.className != 'entireImage') {
+        img.style.border = '3px solid #CC66CC';
+    } else {
+        img.style.opacity = '0.2'; 
+        img.style.filter = 'alpha(opacity=20)'; 
+    }
     img.style.backgroundColor = 'rgb(127,0,127)';
     img.setAttribute('selected', 'selected');
 }
 
 function clearSelectedImage() {
-    jQuery("[selected=selected]").css("z-index","1");
-    jQuery("[selected=selected]").css("z-index");
     jQuery("[selected=selected]")
-        .attr("selected", "")
+        .css("z-index","1");
+    jQuery(".entireImage[selected=selected]")
+        .css("background-color", "rgb(255,255,255)")
+        .css("opacity", "0")
+        .css("filter", "alpha(opacity=0)");
+    jQuery("[selected=selected]:not(.entireImage)")
         .css("background-color", "rgb(127,127,0)")
-        .css("border", "3px solid yellow")
-        .css("pointer-events","auto");
+        .css("border", "3px solid yellow");
+    jQuery("[selected=selected]")
+        .attr("selected", "");
 }
 
 function getSelectedObjectUrl() {
