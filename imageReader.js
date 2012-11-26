@@ -105,6 +105,7 @@ jQuery(document).ready(function() {
                   })
                   .css("cursor","auto");
             }
+            parent.window.jQuery.fn.showSelectedImage();
           } else {
             for (var i = 0; i < newIndices.length; i++) {
               jQuery('#pagediv' + newIndices[i]).children().click(function() {
@@ -113,12 +114,9 @@ jQuery(document).ready(function() {
                 parent.window.jQuery.fn.clearSelectedText();
               });
             }
-          }
-      
-          if (getUrlVars()["editable"] == 'true') {
-            parent.window.jQuery.fn.showSelectedImage();
-          } else {
-            parent.window.jQuery.fn.refreshOrUpdateAnnotations();
+            if (newIndices.length > 0) {
+                parent.window.jQuery.fn.refreshOrUpdateAnnotations();
+            }
           }
         },
         getPageNum : function(index) {

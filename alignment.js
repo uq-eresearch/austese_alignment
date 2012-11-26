@@ -45,15 +45,6 @@
         return -1;
     }
     
-    function indexOf(array, element, startOffset) {
-        for (var i = startOffset; i < array.length; i++) {
-            if (array[i] == element){ 
-                return i;
-            }
-        }
-        return -1;
-    }
-
     // Load annotations for a given image and text
     // READ MODE
     function loadAnnotations(textUrl) {
