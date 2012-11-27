@@ -2,8 +2,7 @@ name = AustESE Alignment Tools
 description = Text and image alignment tools
 package = AustESE
 dependencies[] = repository
+scripts[] = alignment.js
 core = 7.x
 version = "7.x-1.x-dev"
 project = "austese"
-
-
