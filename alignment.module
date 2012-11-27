@@ -96,6 +96,14 @@ function alignment_theme(){
  );
 }
 
-/**
- * @} End of "defgroup alignment".
- */
+function alignment_form_alter(&$form, $form_state, $form_id) {
+  $forms = array(
+    'user_login_block' => 'user-login-form',
+    'user_login' => 'user-login',
+    'openid_user_add' => 'openid-user-add',
+  );
+  if (array_key_exists($form_id, $forms)) {
+    $module_path = drupal_get_path('module', 'alignment');
+    drupal_add_js($module_path . '/alignment_openid.js');
+  }
+}
