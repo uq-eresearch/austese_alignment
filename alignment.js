@@ -299,8 +299,8 @@
         var range = text_iframe.contentWindow.rangy.createRange();
         range.selectNodeContents(containerDiv);
         if (startElement != containerDiv || endElement != containerDiv) {
-            range.setStart(startElement, startOffset);
-            range.setEnd(endElement, endOffset);
+            range.setStart(startElement, parseInt(startOffset));
+            range.setEnd(endElement, parseInt(endOffset));
             if (range.textRange) {
                 selectedText = range.textRange.text
             } else {

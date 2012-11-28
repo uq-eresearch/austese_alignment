@@ -83,8 +83,8 @@ function focusTextOffsetsWithXPaths(startOffset, startOffsetXpath, endOffset, en
 
     range.selectNodeContents(containerDiv);
     if (startElement != containerDiv || endElement != containerDiv) {
-        range.setStart(startElement, startOffset);
-        range.setEnd(endElement, endOffset);
+        range.setStart(startElement, parseInt(startOffset));
+        range.setEnd(endElement, parseInt(endOffset));
     }
     sel.removeAllRanges();
     sel.addRange(range);
@@ -170,8 +170,8 @@ function focusTextOffsets(startOffset, endOffset) {
     var sel = window.rangy.getSelection();
     var range = rangy.createRange();
     range.selectNodeContents(injectedText);
-    range.setStart(injectedText.childNodes[0], startOffset);
-    range.setEnd(injectedText.childNodes[0], endOffset);
+    range.setStart(injectedText.childNodes[0], parseInt(startOffset));
+    range.setEnd(injectedText.childNodes[0], parseInt(endOffset));
     sel.removeAllRanges();
     sel.addRange(range);
 }
