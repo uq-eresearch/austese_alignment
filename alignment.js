@@ -59,7 +59,7 @@
             var imgs = jQuery("#image-input")[0].contentWindow.getImageUrls();
 
             jQuery.ajax({
-                    url : '/lorestore/oac/?annotates=' + textUrl,
+                    url : '/lorestore/oa/?annotates=' + textUrl,
                     type : 'GET',
                     async : false,
                     contentType : "application/rdf+xml",
@@ -1089,7 +1089,7 @@
         var createData = "<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' "
                 + "xmlns:dc='http://purl.org/dc/elements/1.1/' "
                 + "xmlns:oac='http://www.openannotation.org/ns/'>"
-                + "<oac:Annotation rdf:about='/lorestore/oac/dummy'>"
+                + "<oac:Annotation rdf:about='/lorestore/oa/dummy'>"
                 + "<rdf:type rdf:resource='http://austese.net/ns/annotation/Alignment'/>"
                 + "<oac:hasTarget rdf:resource='"
                 + imageUrl
@@ -1118,7 +1118,7 @@
         var objectUrl;
 
         jQuery.ajax({
-            url : '/lorestore/oac/',
+            url : '/lorestore/oa/',
             type : 'POST',
             data : createData,
             async : false,
