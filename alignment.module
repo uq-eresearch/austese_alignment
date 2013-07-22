@@ -38,6 +38,10 @@ function alignment_permission() {
       'title' => t('Edit Alignment'),
       'description' => t('Allow users to create and edit alignments'),
     ),
+    'view alignments' => array(
+      'title' => t('View Alignment'),
+      'description' => t('Allow users to view alignments'),
+    ),
   );
 }
 
