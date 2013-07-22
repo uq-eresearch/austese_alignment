@@ -26,7 +26,7 @@ $module_path = drupal_get_path('module', 'alignment');
        <div class="span6">
             <div class="row ">
                 <fieldset class="control-group">
-                   <div class="input-append">
+                   <div style="width:100%" class="input-append">
                        <input id="image-search" type="text" value="<?php print $left; ?>" /><span id="image-search-button" class="add-on"><i class="icon-search"></i></span>
                    </div>
                 </fieldset>
@@ -40,7 +40,7 @@ $module_path = drupal_get_path('module', 'alignment');
        <div class="span6">
             <div class="row">
                 <fieldset class="control-group">
-                   <div class="input-append">
+                   <div style="width:100%" class="input-append">
                        <input id="text-search" type="text" value="<?php print $right; ?>" /><span id="text-search-button" class="add-on"><i class="icon-search"></i></span>
                    </div>
                 </fieldset>
