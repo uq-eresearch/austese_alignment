@@ -72,6 +72,12 @@ function alignment_description() {
 }
 function alignment_view($left=null, $right=null) {
   $module_path = drupal_get_path('module','alignment');
+  $rep_module_path = drupal_get_Path('module','repository');
+  drupal_add_js($rep_module_path . '/ui/lib/select2/select2.min.js');
+  drupal_add_css($rep_module_path . '/ui/lib/select2/select2.css',  array('group' => CSS_DEFAULT, 'every_page' => FALSE));
+  drupal_add_css($rep_module_path . '/ui/css/tei.css',  array('group' => CSS_DEFAULT, 'every_page' => FALSE));
+  drupal_add_js($rep_module_path . '/ui/lib/handlebars.js');
+  drupal_add_js($rep_module_path . '/ui/js/entitytemplates.js');
   drupal_add_js($module_path . '/alignment.js');
   drupal_add_css($module_path . '/alignment.css');
   if ($left == null) {
