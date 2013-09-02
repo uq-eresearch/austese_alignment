@@ -1,6 +1,16 @@
 <?php
 $module_path = drupal_get_path('module', 'alignment');
+$rep_module_path = drupal_get_path('module','repository');
+$project = null;
+if (isset($_GET['project'])) {
+ $project = $_GET['project'];
+}
 ?>
+<div id="metadata" 
+ data-project="<?php print $project; ?>"
+ data-repmodulepath="<?php print $rep_module_path; ?>"
+ data-module="<?php print $module_path; ?>">
+</div>
 <script type="text/javascript" src="/<?php print $module_path; ?>/rangy-core.js"></script>
 <div class="login-popup" id="login-box" style="margin-top: -83px; margin-left: -122px; ">
     <a id="annoClose" class="close" href="#">
@@ -21,46 +31,34 @@ $module_path = drupal_get_path('module', 'alignment');
     </a>
     <img src="/<?php print $module_path; ?>/resources/loading.gif" style="position:absolute; z-index: -1;"/>
 </div>
-<div id="alignment-ui" data-module="<?php print $module_path; ?>" class="span12">
-   <div class="row">
+
+<div id="alignment-ui">
+   <div class="row-fluid">
        <div class="span6">
-            <div class="row ">
-                <fieldset class="control-group">
-                   <div style="width:100%" class="input-append">
-                       <input id="image-search" type="text" value="<?php print $left; ?>" /><span id="image-search-button" class="add-on"><i class="icon-search"></i></span>
-                   </div>
-                </fieldset>
-            </div>
-            <div class="row">
-                <iframe id="image-input"
-                        src="about:blank" width="97%" height="550px"
-                        style="overflow: hidden" scrolling="no"></iframe>
-            </div>
+         <input type="hidden" class="span12" id="lhs-select"/>
        </div>
        <div class="span6">
-            <div class="row">
-                <fieldset class="control-group">
-                   <div style="width:100%" class="input-append">
-                       <input id="text-search" type="text" value="<?php print $right; ?>" /><span id="text-search-button" class="add-on"><i class="icon-search"></i></span>
-                   </div>
-                </fieldset>
-            </div>
-            <div class="row">
-                <iframe id="text-input"
-                        src="about:blank" width="97%" height="550px"
-                        style="overflow: hidden" scrolling="no"></iframe>
-            </div>
+         <input type="hidden" class="span12" id="rhs-select"/>
        </div>
+  </div>
+       
+  <div class="row-fluid">
+    <iframe class="span6" id="image-input"
+      src="about:blank" width="100%" height="550px"
+      style="overflow: hidden" scrolling="no"></iframe>
+    <iframe class="span6" id="text-input"
+      src="about:blank" width="100%" height="550px"
+      style="overflow: hidden" scrolling="no"></iframe>
    </div>
-   <br />
-   <div class="row" id="viewRow">
+   
+   <div class="row-fluid" id="viewRow">
        <div class="form-actions" id="edit-actions">
            <a id="addAlignmentLink" href="javascript:void(0);"><i class="icon-plus"></i> Add New</a><br />
            <a id="editAlignmentLink" href="javascript:void(0);"><i class="icon-wrench"> </i> Edit Existing</a><br />
            <a id="deleteAlignmentLink" href="javascript:void(0);"><i class="icon-remove"> </i> Delete Existing</a>
        </div>
    </div>
-   <div class="row" id="selectionRow" style="display: none">
+   <div class="row-fluid" id="selectionRow" style="display: none">
         <div class="span6">
             <table>
                 <tr>
@@ -102,13 +100,13 @@ $module_path = drupal_get_path('module', 'alignment');
             </table>
         </div>
    </div>
-   <div class="row" id="createNewRow" style="display: none">
+   <div class="row-fluid" id="createNewRow" style="display: none">
         <div class="form-actions" id="edit-actions">
             <button class="btn btn-primary form-submit" id="new-submit" name="op" value="Save">Save</button>
             <button class="btn form-submit" id="new-cancel" name="op" value="Cancel">Cancel</button>
         </div>
    </div>
-   <div class="row" id="editRow" style="display: none">
+   <div class="row-fluid" id="editRow" style="display: none">
         <div class="form-actions" id="edit-actions">
             <button class="btn btn-primary form-submit" id="edit-update" name="op" value="Update">Update</button>
             <button class="btn btn-danger form-submit" id="edit-delete" name="op" value="Delete">Delete</button>
