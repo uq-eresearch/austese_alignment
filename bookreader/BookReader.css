@@ -30,7 +30,7 @@ a {
     padding: 0;
     width: 100%;
     z-index: 100;
-    background-color: #e2dcc5;
+    background-color: #eeeeee;
     -webkit-box-shadow: 0 1px 3px #999;
     /* Shadow here on FF causes scroll bars */
     overflow: hidden;
@@ -66,7 +66,7 @@ a {
 .BRpagediv1up {
     overflow:hidden;
     cursor: move;
-    background-color: #FEFDEB;
+    background-color: #eeeeee;
     -webkit-box-shadow: 1px 1px 2px #333;
     -moz-box-shadow: 1px 1px 2px #333;
     box-shadow: 1px 1px 2px #333;
@@ -98,7 +98,7 @@ a {
 */
 
 .BRpagediv2up {
-    background-color: rgb(234, 226, 205);
+    background-color: #eeeeee;
     overflow:hidden;
 }
 
@@ -580,7 +580,7 @@ div#BRnav {
     height: 40px;
     overflow: visible;
     z-index: 100;
-    background-color: #e2dcc5;    
+    background-color: #e5e5e5;
     
     -webkit-box-shadow: 1px 1px 2px #333;
     /* No shadow for FF, to be consistent with toolbar */
@@ -632,7 +632,7 @@ div#BRfiller {
     position: absolute;
     height: 40px;
     width: 10px;
-    background-color: #e2dcc5;
+    background-color: #eeeeee;
     top: 0;
     left: 0;
     z-index: 102;
@@ -804,7 +804,7 @@ div#BRzoompos {
 div#BRzoomer button {
     position: absolute;
     left: 0;
-    background-color: #e2dcc5;
+    background-color: #eeeeee;
     width: 26px;
 }
 div#BRzoomer button:hover {
@@ -876,7 +876,7 @@ div#BRzoombtn {
 }
 
 .BRnavCntl {
-    background-color: #e2dcc5;
+    background-color: #e5e5e5;
     position: absolute;
     right: 20px;
     width: 40px;
