@@ -9,36 +9,17 @@ if (isset($_GET['project'])) {
 <div id="metadata" 
  data-project="<?php print $project; ?>"
  data-repmodulepath="<?php print $rep_module_path; ?>"
+ data-lhs="<?php print $left; ?>"
+ data-rhs="<?php print $right; ?>"
  data-module="<?php print $module_path; ?>">
 </div>
-<script type="text/javascript" src="/<?php print $module_path; ?>/rangy-core.js"></script>
-<div class="login-popup" id="login-box" style="margin-top: -83px; margin-left: -122px; ">
-    <a id="annoClose" class="close" href="#">
-        <i class="icon-remove"></i>
-    </a>
-    <label for="edit-openid-identifier" class="control-label">Log in using OpenID</label>
-    <div class="controls">
-        <input type="text" id="edit-openid-identifier" name="openid_identifier" value="https://www.google.com/accounts/o8/id" style="width: 292px" maxlength="255" class="form-text" />
-        <p class="help-block">
-            <a href="http://openid.net/" style="font-size: .8em;">What is OpenID?</a>
-            <button id="annoLogin" class="btn form-submit" id="edit-submit" name="op" value="Log in" style="float:right">Log in</button>
-        </p>
-    </div>
-</div>
-<div class="login-popup" id="login-waiting-box" style="margin-top: -64px; margin-left: -64px; width: 128px; height: 128px;">
-    <a id="annoExitLogin" class="close" href="#" style="position:aboslute">
-        <i class="icon-remove"></i>
-    </a>
-    <img src="/<?php print $module_path; ?>/resources/loading.gif" style="position:absolute; z-index: -1;"/>
-</div>
 
-<div id="alignment-ui">
    <div class="row-fluid">
        <div class="span6">
-         <input type="hidden" class="span12" id="lhs-select"/>
+         <input type="hidden" class="span12" id="lhs-select" value="<?php print $left; ?>"/>
        </div>
        <div class="span6">
-         <input type="hidden" class="span12" id="rhs-select"/>
+         <input type="hidden" class="span12" id="rhs-select" value="<?php print $right; ?>"/>
        </div>
   </div>
        
@@ -114,4 +95,4 @@ if (isset($_GET['project'])) {
             <input style="display: none" type="hidden" id="objectUrl" value="" />
         </div>
    </div>
-</div>
+

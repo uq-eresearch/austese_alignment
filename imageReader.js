@@ -11,6 +11,7 @@ var displayedPages = [];
 var numberPages = 1;
 
 jQuery(document).ready(function() {
+    var editable = getUrlVars()["editable"] == 'true';
     br = new BookReader();
     jQuery.extend(br, {
         getPageWidth : function(index) {
@@ -82,7 +83,7 @@ jQuery(document).ready(function() {
           var newIndices = diff(this.displayedIndices, displayedPages);
           var oldIndices = diff(displayedPages, this.displayedIndices);
           displayedPages = this.displayedIndices;
-          if (getUrlVars()["editable"] == 'true') {          
+          if (editable) {          
             for (var i = 0; i < oldIndices.length; i++) {
               delete areaSelect['#pagediv' + oldIndices[i]];
             }
@@ -145,7 +146,7 @@ jQuery(document).ready(function() {
     jQuery('#textSrch').hide();
     jQuery('#btnSrch').hide();
 
-    if (getUrlVars()["editable"] == 'true') {
+    if (editable) {
         jQuery('#BRcontainer').attr('onscroll','clearSelection();');
     }
 });

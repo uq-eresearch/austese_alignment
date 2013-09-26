@@ -78,22 +78,9 @@ function alignment_view($left=null, $right=null) {
   drupal_add_css($rep_module_path . '/ui/css/tei.css',  array('group' => CSS_DEFAULT, 'every_page' => FALSE));
   drupal_add_js($rep_module_path . '/ui/lib/handlebars.js');
   drupal_add_js($rep_module_path . '/ui/js/entitytemplates.js');
+  drupal_add_js($module_path . '/rangy-core.js');
   drupal_add_js($module_path . '/alignment.js');
   drupal_add_css($module_path . '/alignment.css');
-  if ($left == null) {
-    // TODO dummy file
-    $left = '/' . $module_path . '/resources/' . 'dummy.png';
-  } else {
-    // TODO : check fragment in case of fragment uri (support non-HTML5 browsers)
-    $left = '/content/resources/'.$left;
-  }
-  if ($right == null) {
-      // TODO dummy file
-    $right = '/' . $module_path . '/resources/' . 'dummy.txt';
-  } else {
-    // TODO : check fragment in case of fragment uri (support non-HTML5 browsers)
-    $right = '/content/resources/'.$right;
-  }
   return theme('alignment_ui',array('left'=>$left, 'right'=>$right));
 
 }

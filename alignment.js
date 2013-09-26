@@ -1,38 +1,48 @@
 (function($) {
-
-    var placeholderFunction;
-    var loggedIn = false;
     var alignmentsInMemory = [];
     var loadingAnnotations = false;
+    var repositoryModulePath = jQuery('#metadata').data('repmodulepath');
+    var metadata = jQuery('#metadata');
+    var modulePath = metadata.data('module');
+    var project = metadata.data('project');
+    var left = metadata.data('lhs');
+    var right = metadata.data('rhs');
 
     // Refresh the text and image iframe with annotations
-    // READ MODE
-    function refreshAnnotations(imageUrl, textUrl) {
-        var imageUrl = qualifyURL(imageUrl);
+    function refreshAnnotations() {
+        var imageData = jQuery('#lhs-select').select2("data");
+        var textData = jQuery('#rhs-select').select2("data");
+        var textUrl;
+        var dummy = false;
+        if (!imageData){
+            dummy = true;
+            imageData = {uri: '/' + modulePath + '/resources/dummy.png'};
+        }
+        if (!textData){
+            textData = {uri: '/' +  modulePath + '/resources/dummy.txt'};
+            textUrl = '/' +  modulePath + '/resources/dummy.txt';
+            textUrlRaw = textUrl;
+            dummy = true;
+        } else {
+            textUrl = '/repository/resources/' + textData.id + "/content";
+            textUrlRaw = textUrl + "/raw"
+        }
+        var imageUrl = qualifyURL(imageData.uri);
         var textUrl = qualifyURL(textUrl);
-    
-        jQuery('#text-input').on('load',function(e) {
-            jQuery('#image-input').on('load',function(e) {
-                // Remove onload functions
-                jQuery('#image-input').off();
-                jQuery('#text-input').off();
-                loadAnnotations(textUrl);
-            }).attr('src',"/" + modulePath
-                    + "/imageReader.html?ui=embed&url="
-                    + encodeURIComponent(imageUrl)
-            );
-            
-        }).attr('src',"/" + modulePath + "/textReader.html?ui=embed&url=" + encodeURIComponent(textUrl));
-
-        jQuery('#text-search').val(textUrl);
-        jQuery('#textUrl').val(textUrl);
-        jQuery('#image-search').val(imageUrl);
-        jQuery('#imageUrl').val(imageUrl);
+        if (!dummy){
+            jQuery('#text-input').load(function(){
+                jQuery('#text-input').off('load','**');
+                jQuery('#image-input').load(function(){
+                    jQuery('#image-input').off('load','**');
+                    loadAnnotations(textUrl)
+                })
+            })
+        }
     }
-
+    // create fully qualified URL from relative URL
     function qualifyURL(url) {
         var a = document.createElement('a');
-        a.href = url;
+        a.href= url;
         return a.href;
     }
     
@@ -48,12 +58,12 @@
     // Load annotations for a given image and text
     // READ MODE
     function loadAnnotations(textUrl) {
+        console.log("load annotations",textUrl)
         if (!loadingAnnotations) {
             loadingAnnotations = true;
-            jQuery(alignmentsInMemory).each(function(index, element) {
-                jQuery("#image-input").contents().find('#Image_' + element).remove();
-                jQuery("#text-input").contents().find('#Text_' + element).remove();
-            });
+            // remove all existing alignments
+            jQuery("#image-input").contents().find('.imgAlignment').remove();
+            jQuery("#text-input").contents().find('.textAlignment').remove();
             alignmentsInMemory = [];
 
             var imgs = jQuery("#image-input")[0].contentWindow.getImageUrls();
@@ -64,6 +74,7 @@
                     async : false,
                     contentType : "application/rdf+xml",
                     success : function(res) {
+                        console.log("got annotations",res)
                         var patt1 = "#xpath=[^=#,]+,[^=#,]+#char=[0-9]+,[0-9]+$";
                         var patt2 = "#xywh=[\\.0-9]+,[\\.0-9]+,[\\.0-9]+,[\\.0-9]+$";
                         var patt3 = /[^=#,]+/g;
@@ -181,13 +192,12 @@
                     },
                     error : function(xhr, testStatus, error) {
                         if (console && console.log) {
-                            console.log("Error occured: " + error + " " + xhr
-                                    + " " + testStatus);
+                            console.log("Error occured: " + error, xhr, testStatus);
                         }
                         return;
                     }
             });
-            loadingAnnotations = false;
+            
         }
     }
 
@@ -215,7 +225,7 @@
                     "Image Selection " + Math.round((w * imgWidth) / 100)  + " x " 
                     + Math.round((h * imgHeight) / 100) + " px");
         } else {
-            rectDiv.attr('id', 'Image_' + annotationID);
+            rectDiv.attr('id', 'Image_' + annotationID).addClass('imgAlignment');
         }
 
         if (w == 0 && h == 0) {
@@ -347,7 +357,7 @@
                 jQuery('#text-selection').html(selectedText.toString());
             }
         } else {
-            image.attr('id', 'Text_' + annotationID);
+            image.attr('id', 'Text_' + annotationID).addClass('textAlignment');
         }
         rectDiv.attr('objectUrl', objectUrl);
         image.attr('style', 'position: absolute; left: 6px; top: '
@@ -386,36 +396,38 @@
     }
 
     // Refresh the image reader with the images from the search bar
-    // READ MODE
-    function updateImageReader() {
-        var newImageUrl = jQuery('#image-search').val();
-
-        clearImageSelection();
-
-        if (mode == READ_MODE) {
-            refreshAnnotations(newImageUrl, jQuery('#textUrl').val());
-        } else {
-            document.getElementById('image-input').src = "/" + modulePath
-                    + "/imageReader.html?ui=embed&editable=true&url="
-                    + encodeURIComponent(newImageUrl);
-            document.getElementById('imageUrl').value = newImageUrl;
+    function updateImageReader(arg) {
+        console.log("update image reader",arg)
+        if (arg && arg.added && arg.added.uri){
+            var newImageUrl = arg.added.uri;
+            clearImageSelection();
+            var imageReaderUrl = "/" + modulePath
+                + "/imageReader.html?ui=embed&url="
+                + encodeURIComponent(newImageUrl);
+            if (mode == READ_MODE) {
+                refreshAnnotations();
+            } else {
+                imageReaderUrl += "&editable=true";
+            }
+            jQuery('#image-input').attr('src', imageReaderUrl);
         }
     }
 
     // Refresh the text reader with the text from the search bar
-    // READ MODE
-    function updateTextReader(objectUrl) {
-        var newTextUrl = jQuery('#text-search').val();
-
-        clearTextSelection();
-
-        if (mode == READ_MODE) {
-            refreshAnnotations(jQuery('#imageUrl').val(), newTextUrl);
-        } else {
-            jQuery('#text-input').attr('src', "/" + modulePath
-                    + "/textReader.html?ui=embed&editable=true&url="
-                    + encodeURIComponent(newTextUrl));
-            jQuery('#textUrl').val(newTextUrl);
+    function updateTextReader(arg) {
+        if (arg && arg.added && arg.added.uri){
+            var newTextUrl = arg.added.uri;
+    
+            clearTextSelection();
+            var textReaderUrl = "/" + modulePath
+                + "/textReader.html?ui=embed&url="
+                + encodeURIComponent(newTextUrl);
+            if (mode == READ_MODE) {
+                refreshAnnotations();
+            } else {
+                textReaderUrl += "&editable=true";
+            }
+            jQuery('#text-input').attr('src', textReaderUrl);
         }
     }
 
@@ -496,12 +508,15 @@
     // Refresh the text and image iframe with annotations
     // READ MODE
     jQuery.fn.refreshOrUpdateAnnotations = function() {
-        loadAnnotations(document.getElementById('text-search').value);
+        var imageData = jQuery('#rhs-select').select2("data");
+        if (!imageData) return
+        loadAnnotations(qualifyURL(imageData.uri));
     }
 
     // Check if the selected area should be visible
     // READ MODE
     jQuery.fn.showSelectedImage = function() {
+        // FIXME!!!
         if (jQuery('#image-input').contents().find('#selectedImage').length == 0 
                 && jQuery('#image-input').contents().find('img[src = "' 
                         + jQuery('#imageUrl').val() + '"]').length == 1 
@@ -612,7 +627,9 @@
             var img = jQuery(jQuery(selection.getOptions().parent).children('img')[0]);
             var image_url = img.attr('src');
 
-            jQuery('#imageUrl').val(image_url);
+            //jQuery('#imageUrl').val(image_url);
+            //FIXME
+            //jQuery('#lhs-select').select2('val',image_url);
             jQuery('#imageX').val(x1);
             jQuery('#imageY').val(y1);
             jQuery('#imageW').val(width);
@@ -918,153 +935,6 @@
         return null;
     }
 
-    function getCookie(c_name) {
-        if (document.cookie.length > 0) {
-            c_start = String(document.cookie).indexOf(c_name + "=");
-            if (c_start != -1) {
-                c_start = c_start + c_name.length + 1;
-                c_end = String(document.cookie).indexOf(";", c_start);
-                if (c_end == -1) c_end = document.cookie.length;
-                return unescape(document.cookie.substring(c_start, c_end));
-            }
-        }
-        return "";
-    }
-
-    // Attempt to login with open-id
-    // CREATE/EDIT MODE
-    function attemptLogin() {
-        var openid_identifier = getCookie('Drupal.visitor.openid_identifier');
-        if (openid_identifier == null || openid_identifier.length <= 0) { 
-            openid_identifier = checkForOpenID();
-        }
-        if (openid_identifier != null && openid_identifier.length > 0) { 
-            popupWindow = window.open('/lorestore/j_spring_openid_security_check?openid_identifier=' 
-              + encodeURIComponent(openid_identifier) + '&submit', 'openid_popup','width=400,height=200');
-
-            var waitingBox = jQuery('#login-waiting-box').fadeIn(300);
-
-            var popMargTop = (waitingBox.height() + 24) / 2;
-            var popMargLeft = (waitingBox.width() + 24) / 2;
-
-            waitingBox.css({
-                'margin-top' : -popMargTop,
-                'margin-left' : -popMargLeft
-            });
-
-            var mask = jQuery(document.createElement('div'));
-            mask.attr('id','mask');
-            mask.css('filter','alpha(opacity=80)');
-            mask.css('opacity','.8');
-            jQuery('body').append(mask);
-            
-            jQuery('#mask').fadeIn(300);
-
-            waitUntilPopupLoggedIn();
-        } else {
-            showLogin();
-        }
-    }
-
-    function checkForOpenID() {
-        var returnValue;
-        jQuery.ajax({
-            url: '/user/',
-            type: 'GET',
-            async: false,
-            complete: function (xhr, textStatus) {
-                var userUrl;
-                jQuery.each(jQuery(xhr.responseText), function(index, element) {
-                    if (element.hasAttribute 
-                            && element.getAttribute 
-                            && element.getAttribute('resource') 
-                            && element.hasAttribute('rel') 
-                            && (element.getAttribute('rel') == "foaf:account")
-                            && element.hasAttribute('typeof') 
-                            && (element.getAttribute('typeof') == "foaf:Person")) {
-                        userUrl = element.getAttribute('resource');
-                    }
-                });
-                if (userUrl) {
-                    jQuery.ajax({
-                        url: userUrl + '/openid',
-                        type: 'GET',
-                        async: false,
-                        complete: function (xhr, textStatus) {
-                            jQuery.each(jQuery(xhr.responseText), function(index, element) {
-                                if (element.childNodes) {
-                                    if (jQuery(element).find('.odd').length > 0) {
-                                        returnValue = String(jQuery(element).find('.odd')[0].children[0].innerHTML);
-                                    }
-                                }
-                            });
-                        }
-                    });
-                }
-            }
-        });
-        return returnValue;
-    }
-
-    // Login to lorestore
-    // CREATE/EDIT MODE
-    function showLogin() {
-        var loginBox = jQuery('#login-box').fadeIn(300);
-
-        var popMargTop = (loginBox.height() + 24) / 2;
-        var popMargLeft = (loginBox.width() + 24) / 2;
-
-        loginBox.css({
-            'margin-top' : -popMargTop,
-            'margin-left' : -popMargLeft
-        });
-
-        var mask = jQuery(document.createElement('div'));
-        mask.attr('id','mask');
-        mask.css('filter','alpha(opacity=80)');
-        mask.css('opacity','.8');
-        jQuery('body').append(mask);
-            
-        jQuery('#mask').fadeIn(300);
-    }
-
-    function login() {
-        var openid_identifier = jQuery('input[name="openid_identifier"]').attr('value');
-        popupWindow = window.open('/lorestore/j_spring_openid_security_check?openid_identifier=' + encodeURIComponent(openid_identifier) + '&submit', 'openid_popup','width=900,height=600');
-
-        waitUntilPopupLoggedIn();
-    }
-
-    function waitUntilPopupLoggedIn() {
-        if ((jQuery('.login-popup[style*=block]').length) > 0) {
-            try {
-                if (popupWindow.length == 0) {
-                    if (popupWindow && popupWindow.location && popupWindow.location.href 
-                        && ((String(popupWindow.location.href)).indexOf('loggedIn.html')) != -1) {
-                        popupWindow.close();
-                        window.focus();
-                        placeholderFunction();
-                        exitLogin();
-                    } else {
-                        setTimeout(waitUntilPopupLoggedIn, 1000);
-                    }
-                } else {
-                    setTimeout(waitUntilPopupLoggedIn, 1000);
-                }
-            } catch(err) {
-                setTimeout(waitUntilPopupLoggedIn, 1000);
-            }
-        }
-    }
-
-    function exitLogin() {
-        jQuery('#mask , .login-popup').fadeOut(300, function() {
-            jQuery('#mask').remove();
-        });
-        jQuery('#login_error_message').css('display', 'none');
-        return false;
-    }
-
     // Submit a new alignment
     // CREATE MODE
     function submit() {
@@ -1083,149 +953,63 @@
             return;
         }
         
-        var imageUrl = jQuery('#imageUrl').val();
-        var textUrl = jQuery('#textUrl').val();
-
-        var createData = "<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' "
-                + "xmlns:dc='http://purl.org/dc/elements/1.1/' "
-                + "xmlns:oac='http://www.openannotation.org/ns/'>"
-                + "<oac:Annotation rdf:about='/lorestore/oa/dummy'>"
-                + "<rdf:type rdf:resource='http://austese.net/ns/annotation/Alignment'/>"
-                + "<oac:hasTarget rdf:resource='"
-                + imageUrl
-                + "#xywh="
-                + x
-                + ","
-                + y
-                + ","
-                + width
-                + ","
-                + height
-                + "'/><oac:hasTarget rdf:resource='"
-                + textUrl
-                + "#xpath="
-                + startOffsetXpath
-                + ","
-                + endOffsetXpath
+        var imageUrl = qualifyURL(jQuery('#lhs-select').select2('data').uri);
+        var textUrl = qualifyURL(jQuery('#rhs-select').select2('data').uri);
+        var createData = {
+                "@graph": [
+                 {
+                   "@id": "http://localhost/lorestore/oa/dummy",
+                   "@type": "oa:Annotation",
+                   "motivatedBy": {"@id": "austese:Alignment"},
+                   "hasTarget": {
+                       "@type": "oa:SpecificResource",
+                       "hasSelector": {
+                           "@type": "oa:FragmentSelector", 
+                           "value": "xywh=" + x + "," + y + "," + width + "," + height
+                       },
+                       "hasSource": {
+                           "@id": imageUrl, 
+                           "@type": "dctypes:Image"
+                       }
+                   },
+                   "hasTarget": {
+                       "@type": "oa:SpecificResource",
+                       "hasSelector": {
+                           "@type": "oa:FragmentSelector", 
+                           "value": "#xpath="+ startOffsetXpath + ","+ endOffsetXpath
+                       },
+                       "hasSource": {
+                           "@id": imageUrl, 
+                           "@type": "dctypes:Text"
+                       }
+                   }
+                 }
+                ]
+              };
+       /*  
+               
                 + "#char="
                 + startOffset
                 + ","
                 + endOffset
-                + "'/><"
-                + "/"
-                + "oac:Annotation ><" + "/" + "rdf:RDF>";
-
-        var objectUrl;
-
+*/
         jQuery.ajax({
             url : '/lorestore/oa/',
             type : 'POST',
-            data : createData,
-            async : false,
-            contentType : "application/rdf+xml",
-            xhrFields : {
-                withCredentials : true
+            async:false,
+            processData: false,
+            data: JSON.stringify(createData),
+            headers: {
+                'Content-Type': 'application/json'
             },
             success : function(res) {
-                loggedIn = true;
-                objectUrl = jQuery(jQuery(res).children()[0])
+                console.log("created alignment annotation",res)
+                /*objectUrl = jQuery(jQuery(res).children()[0])
                         .children()[0].getAttribute('rdf:about');
+                        */
             },
-            error : function(xhr, testStatus, error) {
-                loggedIn = false;
-                if (xhr.status == 403) {
-                    placeholderFunction = submit;
-                    attemptLogin();
-                } else if (console && console.log) {
-                    console.log("Error occured: " + error + " " + xhr + " "
-                            + testStatus);
-                }
-                return;
-            }
-        });
-
-        if (!loggedIn) {
-            return;
-        }
-
-        var updateData = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="'
-                + objectUrl
-                + '" ><rdf:type rdf:resource="http://www.openannotation.org/ns/Annotation"/>'
-                + '<rdf:type rdf:resource="http://austese.net/ns/annotation/Alignment"/>'
-                + '<hasTarget xmlns="http://www.openannotation.org/ns/" rdf:resource="'
-                + imageUrl
-                + '#xywh='
-                + x
-                + ','
-                + y
-                + ','
-                + width
-                + ','
-                + height
-                + '"/>'
-                + '<hasTarget xmlns="http://www.openannotation.org/ns/" rdf:resource="'
-                + textUrl
-                + '#xpath='
-                + startOffsetXpath
-                + ','
-                + endOffsetXpath
-                + '#char='
-                + startOffset
-                + ','
-                + endOffset
-                + '"/>'
-                + '<'
-                + '/'
-                + 'rdf:Description><rdf:Description rdf:about="'
-                + textUrl
-                + '#xpath='
-                + startOffsetXpath
-                + ','
-                + endOffsetXpath
-                + '#char='
-                + startOffset
-                + ','
-                + endOffset
-                + '"><isPartOf xmlns="http://purl.org/dc/terms/" rdf:resource="'
-                + textUrl
-                + '"'
-                + '/'
-                + '><'
-                + '/'
-                + 'rdf:Description>'
-                + '<rdf:Description rdf:about="'
-                + imageUrl
-                + '#xywh='
-                + x
-                + ','
-                + y
-                + ','
-                + width
-                + ','
-                + height
-                + '"><isPartOf xmlns="http://purl.org/dc/terms/" rdf:resource="'
-                + imageUrl
-                + '"/><'
-                + '/'
-                + 'rdf:Description><'
-                + '/'
-                + 'rdf:RDF>';
-
-        jQuery.ajax({
-            url : objectUrl,
-            type : 'PUT',
-            data : updateData,
-            async : false,
-            contentType : "application/rdf+xml",
-            xhrFields : {
-                withCredentials : true
-            },
-            error : function(xhr, testStatus, error) {
-                if (console && console.log) {
-                    console.log("Error occured: " + error + " " + xhr + " "
-                            + testStatus);
-                }
-                return;
+            error : function(xhr, status, error) {
+               console.log("Error creating alignment",error, xhr,status);
             }
         });
 
@@ -1247,9 +1031,12 @@
         var height = document.getElementById('imageH').value;
         var width = document.getElementById('imageW').value;
 
-        var imageUrl = document.getElementById('imageUrl').value;
-        var textUrl = document.getElementById('textUrl').value;
-
+        var imageData = jQuery('#lhs-select').select2("data");
+        // FIXME
+        var textData = jQuery('#rhs-select').select2("data");
+        var textUrl = qualifyURL(textData.uri);
+        var imageUrl = qualifyURL(imageData.uri);
+        
         var objectUrl = document.getElementById('objectUrl').value;
 
         var updateData = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="'
@@ -1322,31 +1109,22 @@
                 withCredentials : true
             },
             success : function(res) {
-                loggedIn = true;
+
             },
             error : function(xhr, testStatus, error) {
-                loggedIn = false;
-                if (xhr.status == 403) {
-                    placeholderFunction = update;
-                    attemptLogin();
-                } else if (console && console.log) {
+                if (console && console.log) {
                     console.log("Error occured: " + error + " " + xhr + " "
                             + testStatus);
                 }
-                return;
             }
         });
-
-        if (!loggedIn) {
-            return;
-        }
 
         clearImageSelection();
         clearTextSelection();
         viewAlignment();
     }
 
-    // Check the user has selected an alignment and is logged-in
+    // Confirm delete alignment
     // READ/EDIT MODE
     function confirmDeleteAlignment() {
         var objectUrl = document.getElementById('objectUrl').value;
@@ -1375,24 +1153,16 @@
                 withCredentials : true
             },
             success : function(res) {
-                loggedIn = true;
+
             },
             error : function(xhr, testStatus, error) {
-                loggedIn = false;
-                if (xhr.status == 403) {
-                    placeholderFunction = deleteAlignment;
-                    attemptLogin();
-                } else if (console && console.log) {
+
+               if (console && console.log) {
                     console.log("Error occured: " + error + " " + xhr + " "
                             + testStatus);
                 }
-                return;
             }
         });
-
-        if (!loggedIn) {
-            return;
-        }
 
         clearImageSelection();
         clearTextSelection();
@@ -1402,22 +1172,25 @@
     // Update view for CREATE MODE
     function addAlignment() {
         mode = CREATE_MODE;
-
+        var imageData = jQuery('#lhs-select').select2('data');
+        if (!imageData) {
+            console.log("no image data")
+            return;
+        } else {
+            var imageUrl = qualifyURL(imageData.uri);
+        }
+        var textUrl = qualifyURL(jQuery('#rhs-select').select2('data').uri);
+        
         document.getElementById('image-input').src = "/" + modulePath
                 + "/imageReader.html?ui=embed&editable=true&url="
-                + encodeURIComponent(document.getElementById('imageUrl').value);
+                + encodeURIComponent(imageUrl);
         document.getElementById('text-input').src = "/" + modulePath
                 + "/textReader.html?ui=embed&editable=true&url="
-                + encodeURIComponent(document.getElementById('textUrl').value);
+                + encodeURIComponent(textUrl);
         jQuery('#createNewRow').css('display', 'block');
         jQuery('#editRow').css('display', 'none');
         jQuery('#selectionRow').css('display', 'block');
         jQuery('#viewRow').css('display', 'none');
-
-        jQuery('#image-search').attr('disabled', 'disabled');
-        jQuery('#text-search').attr('disabled', 'disabled');
-        jQuery('#image-search-button').attr('disabled', 'disabled');
-        jQuery('#text-search-button').attr('disabled', 'disabled');
 
         clearImageSelection();
         clearTextSelection();
@@ -1432,12 +1205,7 @@
         jQuery('#selectionRow').css('display', 'none');
         jQuery('#viewRow').css('display', 'block');
 
-        jQuery('#image-search').removeAttr('disabled');
-        jQuery('#text-search').removeAttr('disabled');
-        jQuery('#image-search-button').removeAttr('disabled');
-        jQuery('#text-search-button').removeAttr('disabled');
-
-        refreshAnnotations(jQuery('#imageUrl').val(), jQuery('#textUrl').val());
+        refreshAnnotations();
     }
 
     // Update view for EDIT MODE
@@ -1478,8 +1246,8 @@
                 addImageAndText(annotationID, objectUrl, src, index, x, y, w, h,
                         startOffset, startOffsetXpath, endOffset,
                         endOffsetXpath, true);
-
-                jQuery('#imageUrl').val(src);
+// FIXME
+                //jQuery('#imageUrl').val(src);
                 jQuery('#imageX').val(x);
                 jQuery('#imageY').val(y);
                 jQuery('#imageW').val(w);
@@ -1497,48 +1265,105 @@
         }
         jQuery('#text-input').attr('src',"/" + modulePath
                 + "/textReader.html?ui=embed&editable=true&url="
-                + encodeURIComponent(document.getElementById('textUrl').value));
+                + encodeURIComponent(qualifyURL(jQuery('#rhs-select').select2('data').uri)));
 
         jQuery('#createNewRow').css('display', 'none');
         jQuery('#editRow').css('display', 'block');
         jQuery('#selectionRow').css('display', 'block');
         jQuery('#viewRow').css('display', 'none');
 
-        jQuery('#image-search').attr('disabled', 'disabled');
-        jQuery('#text-search').attr('disabled', 'disabled');
-        jQuery('#image-search-button').attr('disabled', 'disabled');
-        jQuery('#text-search-button').attr('disabled', 'disabled');
+
     }
 
+    var setUpSearchFields = function(elem,type){
+        elem.select2({
+            placeholder: 'Search by title or filename',
+            minimumInputLength: 0,
+            ajax: {
+                dataType: 'json',
+                url: '/' +repositoryModulePath + '/api/resources/',
+                data: function(term,page){
+                    var searchParams = {
+                        query: term,
+                        type: type,
+                        pageSize: 10,
+                        page: page
+                    };
+                    if (project) {
+                        searchParams.project = project;
+                    }
+                    return searchParams;
+                },
+                results: function (data, page) { 
+                    var more = (page * 10) < data.count;
+                    data.more = more;
+                    return data;
+                }
+            },
+            initSelection: function(element, callback) {
+                // load value when id is set
+                var id=jQuery(element).val();
+                var elemId = jQuery(element).prop('id');
+                if (id!=="") {
+                    jQuery.ajax({
+                        url: '/' +repositoryModulePath + '/api/resources/' + id,
+                        dataType: 'json',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        success: function(d){
+                            console.log("got data init selection",d)
+                            callback(d);
+                            if (elemId == 'lhs-select'){
+                                updateImageReader({added:d});
+                            } else if (elemId == 'rhs-select'){
+                                updateTextReader({added:d});
+                            }
+                        }
+                    });
+                }
+            },
+            formatResult: function(transcription){
+                return getTemplate('resourceBareDetail')(transcription);
+               // return '<b>' + transcription.filename + "</b>" + (transcription.metadata.title? ", " + transcription.metadata.title : "");
+            },
+            formatSelection: function(transcription){
+                return getTemplate('resourceBareDetail')(transcription);
+                //return '<b>' + transcription.filename + "</b>" + (transcription.metadata.title? ", " + transcription.metadata.title : "");
+            },
+            escapeMarkup: function(m){return m;}
+        })
+    }
+    
     var READ_MODE = 0;
     var CREATE_MODE = 1;
     var EDIT_MODE = 2;
     var mode = READ_MODE;
 
-    jQuery(document).ready(
-        function(e) {
-            // FIXME global var
-            window.modulePath = jQuery('#alignment-ui').data('module');
-            refreshAnnotations(jQuery('#image-search').val(), jQuery('#text-search').val());
-            // set up on click handlers
-            jQuery('#image-search-button').on('click',updateImageReader);
-            jQuery('#text-search-button').on('click',updateTextReader);
-            jQuery('#annoLogin').on('click', login);
-            jQuery('#annoClose').on('click', exitLogin);
-            jQuery('#annoExitLogin').on('click', exitLogin);
-            jQuery('#addAlignmentLink').on('click', addAlignment);
-            jQuery('#editAlignmentLink').on('click', editAlignment);
-            jQuery('#deleteAlignmentLink').on('click', confirmDeleteAlignment);
-            jQuery('#imageSelBtn').on('click', updateImageSelection);
-            jQuery('#textSelBtn').on('click', updateTextSelection);
-            jQuery('#new-submit').on('click', submit);
-            jQuery('#new-cancel').on('click', viewAlignment);
-            jQuery('#edit-update').on('click', update);
-            jQuery('#edit-delete').on('click', confirmDeleteAlignment);
-            jQuery('#edit-cancel').on('click', viewAlignment);
-            jQuery('#login-button').on('click', login);
-            jQuery('#login-popup-close').on('click', exitLogin);
-            jQuery('#login-waiting-popup-close').on('click', exitLogin);
-        }
-    );
+    // initialize alignment ui
+    setUpSearchFields(jQuery("#lhs-select"),'image');
+    setUpSearchFields(jQuery("#rhs-select"),'text');
+    
+    refreshAnnotations();
+    
+    // set up handlers
+    jQuery('#lhs-select').on('change',updateImageReader);
+    jQuery('#rhs-select').on('change',updateTextReader);
+    
+    
+    jQuery('#addAlignmentLink').on('click', addAlignment);
+    jQuery('#editAlignmentLink').on('click', editAlignment);
+    jQuery('#deleteAlignmentLink').on('click', confirmDeleteAlignment);
+    
+    jQuery('#imageSelBtn').on('click', updateImageSelection);
+    jQuery('#textSelBtn').on('click', updateTextSelection);
+    
+    jQuery('#new-submit').on('click', submit);
+    jQuery('#new-cancel').on('click', viewAlignment);
+    
+    jQuery('#edit-update').on('click', update);
+    jQuery('#edit-delete').on('click', confirmDeleteAlignment);
+    jQuery('#edit-cancel').on('click', viewAlignment);
+            
+      
 })(jQuery);
