@@ -7,8 +7,7 @@ function getUrlVars() {
     return vars;
 }
 
-window.onload = function() {
-    var url;
+window.onload = function() {		
     if (getUrlVars()["url"]) {
         url = decodeURIComponent(getUrlVars()["url"]);
     } 
@@ -21,6 +20,8 @@ window.onload = function() {
         var newHTML = injectedText.html();
         injectedText.html(newHTML.substr(1,newHTML.length-2));
         setTimeout(iResize, 50);
+				
+				parent.window.jQuery.fn.refreshOrUpdateAnnotations();
     });
 
     jQuery('#injected-text').load(url, function() {

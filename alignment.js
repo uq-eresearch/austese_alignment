@@ -28,15 +28,27 @@
             textUrlRaw = textUrl + "/raw"
         }
         var imageUrl = qualifyURL(imageData.uri);
-        var textUrl = qualifyURL(textUrl);
+        var textUrl = qualifyURL(textData.uri);
         if (!dummy){
-            jQuery('#text-input').load(function(){
-                jQuery('#text-input').off('load','**');
-                jQuery('#image-input').load(function(){
-                    jQuery('#image-input').off('load','**');
-                    loadAnnotations(textUrl)
-                })
-            })
+            jQuery('#text-input').on('load',function(e) {
+                jQuery('#image-input').on('load',function(e) {
+                    // Remove onload functions
+                    jQuery('#image-input').off();
+                    jQuery('#text-input').off();
+                    loadAnnotations(textUrl);
+                }).attr('src',"/" + modulePath
+                    + "/imageReader.html?ui=embed&url="
+                    + encodeURIComponent(imageUrl)
+                );
+            }).attr('src',"/" + modulePath + "/textReader.html?ui=embed&url=" + encodeURIComponent(textUrl));
+
+            //jQuery('#text-input').load(function(){
+            //    jQuery('#text-input').off('load','**');
+            //    jQuery('#image-input').load(function(){
+            //        jQuery('#image-input').off('load','**');
+            //        loadAnnotations(textUrl)
+            //    })
+            //})
         }
     }
     // create fully qualified URL from relative URL
@@ -58,8 +70,8 @@
     // Load annotations for a given image and text
     // READ MODE
     function loadAnnotations(textUrl) {
-        console.log("load annotations",textUrl)
-        if (!loadingAnnotations) {
+        if (!loadingAnnotations && mode == READ_MODE) {
+            console.log("load annotations",textUrl)
             loadingAnnotations = true;
             // remove all existing alignments
             jQuery("#image-input").contents().find('.imgAlignment').remove();
@@ -69,7 +81,7 @@
             var imgs = jQuery("#image-input")[0].contentWindow.getImageUrls();
 
             jQuery.ajax({
-                    url : '/lorestore/oa/?annotates=' + textUrl,
+                    url : '/lorestore/oa/?matchval=' + textUrl + '&asTriples=false',
                     type : 'GET',
                     async : false,
                     contentType : "application/rdf+xml",
@@ -121,8 +133,7 @@
 
                                         if (res1.match(patt2)) {
                                             jQuery(imgs).each(function(index, element) {
-                                                if (res1.match(patt2) && res1.substring(0,
-                                                        element.length) === element) {
+                                                if (res1.match(patt2) && res1.indexOf(element) != -1) {
                                                     matchs = res1.match(patt2);
                                                     numbers = matchs.toString()
                                                             .match(patt4);
@@ -155,8 +166,7 @@
 
                                         if (res2.match(patt2)) {
                                             jQuery(imgs).each(function(index, element) {
-                                                if (res2.match(patt2) && res2.substring(0,
-                                                         element.length) === element) {
+                                                if (res2.match(patt2) && res2.indexOf(element) != -1) {
                                                     matchs = res2.match(patt2);
                                                     numbers = matchs.toString()
                                                             .match(patt4);
@@ -189,11 +199,13 @@
                                 }
                             }
                         }
+                        loadingAnnotations = false;
                     },
                     error : function(xhr, testStatus, error) {
                         if (console && console.log) {
                             console.log("Error occured: " + error, xhr, testStatus);
                         }
+                        loadingAnnotations = false;
                         return;
                     }
             });
@@ -955,7 +967,7 @@
         
         var imageUrl = qualifyURL(jQuery('#lhs-select').select2('data').uri);
         var textUrl = qualifyURL(jQuery('#rhs-select').select2('data').uri);
-        var createData = {
+        /** var createData = {
                 "@graph": [
                  {
                    "@id": "http://localhost/lorestore/oa/dummy",
@@ -985,22 +997,48 @@
                    }
                  }
                 ]
-              };
-       /*  
-               
+              }; */
+              
+        var createData = "<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' "
+                + "xmlns:dc='http://purl.org/dc/elements/1.1/' "
+                + "xmlns:oa='http://www.w3.org/ns/oa#'>"
+                + "<oa:Annotation rdf:about='/lorestore/oa/dummy'>"
+                + "<rdf:type rdf:resource='http://austese.net/ns/annotation/Alignment'/>"
+                + "<oa:hasTarget rdf:resource='"
+                + imageUrl
+                + "#xywh="
+                + x
+                + ","
+                + y
+                + ","
+                + width
+                + ","
+                + height
+                + "'/><oa:hasTarget rdf:resource='"
+                + textUrl
+                + "#xpath="
+                + startOffsetXpath
+                + ","
+                + endOffsetXpath
                 + "#char="
                 + startOffset
                 + ","
                 + endOffset
-*/
+                + "'/>"
+                + "<"
+                + "/"
+                + "oa:Annotation ><" + "/" + "rdf:RDF>";
+
         jQuery.ajax({
             url : '/lorestore/oa/',
             type : 'POST',
             async:false,
             processData: false,
-            data: JSON.stringify(createData),
+            //data: JSON.stringify(createData),
+            data: createData,
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/rdf+xml'
+                //'Content-Type': 'application/json'
             },
             success : function(res) {
                 console.log("created alignment annotation",res)
@@ -1261,7 +1299,7 @@
             jQuery('#image-input').attr('src',"/"
                     + modulePath
                     + "/imageReader.html?ui=embed&editable=true&url="
-                    + encodeURIComponent(document.getElementById('imageUrl').value));
+                    + encodeURIComponent(qualifyURL(jQuery('#lhs-select').select2('data').uri)));
         }
         jQuery('#text-input').attr('src',"/" + modulePath
                 + "/textReader.html?ui=embed&editable=true&url="
