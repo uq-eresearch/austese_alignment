@@ -9,6 +9,55 @@
     var right = metadata.data('rhs');
 
     // Refresh the text and image iframe with annotations
+    function reloadAnnotations() {
+        var imageData = jQuery('#lhs-select').select2("data");
+        var textData = jQuery('#rhs-select').select2("data");
+        var textUrl;
+        var dummy = false;
+        if (!imageData){
+            dummy = true;
+            imageData = {uri: '/' + modulePath + '/resources/dummy.png'};
+        }
+        if (!textData){
+            textData = {uri: '/' +  modulePath + '/resources/dummy.txt'};
+            textUrl = '/' +  modulePath + '/resources/dummy.txt';
+            textUrlRaw = textUrl;
+            dummy = true;
+        } else {
+            textUrl = '/repository/resources/' + textData.id + "/content";
+            textUrlRaw = textUrl + "/raw"
+        }
+        var imageUrl = qualifyURL(imageData.uri);
+        var textUrl = qualifyURL(textData.uri);
+        if (!dummy){
+            document.getElementById('text-input').contentWindow.setEditable(false);
+            jQuery('#image-input').on('load',function(e) {
+                // Remove onload functions
+                jQuery('#image-input').off();
+                jQuery('#text-input').off();
+                loadAnnotations(textUrl);
+            }).attr('src',"/" + modulePath
+                + "/imageReader.html?ui=embed&url="
+                + encodeURIComponent(imageUrl)
+            );
+        }
+    }
+    // create fully qualified URL from relative URL
+    function qualifyURL(url) {
+        var a = document.createElement('a');
+        a.href= url;
+        return a.href;
+    }
+    
+    function indexOf(array, element) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i] == element){ 
+                return i;
+            }
+        }
+        return -1;
+    }
+    
     function refreshAnnotations() {
         var imageData = jQuery('#lhs-select').select2("data");
         var textData = jQuery('#rhs-select').select2("data");
@@ -30,43 +79,16 @@
         var imageUrl = qualifyURL(imageData.uri);
         var textUrl = qualifyURL(textData.uri);
         if (!dummy){
-            jQuery('#text-input').on('load',function(e) {
-                jQuery('#image-input').on('load',function(e) {
-                    // Remove onload functions
-                    jQuery('#image-input').off();
-                    jQuery('#text-input').off();
-                    loadAnnotations(textUrl);
-                }).attr('src',"/" + modulePath
-                    + "/imageReader.html?ui=embed&url="
-                    + encodeURIComponent(imageUrl)
-                );
-            }).attr('src',"/" + modulePath + "/textReader.html?ui=embed&url=" + encodeURIComponent(textUrl));
+          loadAnnotations(textUrl);
+        }
+    }
+    
+    function clearAnnotations() {
+        jQuery("#image-input").contents().find('.imgAlignment').remove();
+        jQuery("#text-input").contents().find('.textAlignment').remove();
+        alignmentsInMemory = [];
+    }
 
-            //jQuery('#text-input').load(function(){
-            //    jQuery('#text-input').off('load','**');
-            //    jQuery('#image-input').load(function(){
-            //        jQuery('#image-input').off('load','**');
-            //        loadAnnotations(textUrl)
-            //    })
-            //})
-        }
-    }
-    // create fully qualified URL from relative URL
-    function qualifyURL(url) {
-        var a = document.createElement('a');
-        a.href= url;
-        return a.href;
-    }
-    
-    function indexOf(array, element) {
-        for (var i = 0; i < array.length; i++) {
-            if (array[i] == element){ 
-                return i;
-            }
-        }
-        return -1;
-    }
-    
     // Load annotations for a given image and text
     // READ MODE
     function loadAnnotations(textUrl) {
@@ -74,10 +96,14 @@
             console.log("load annotations",textUrl)
             loadingAnnotations = true;
             // remove all existing alignments
-            jQuery("#image-input").contents().find('.imgAlignment').remove();
-            jQuery("#text-input").contents().find('.textAlignment').remove();
-            alignmentsInMemory = [];
+            clearAnnotations();
 
+            if (!jQuery("#image-input")[0].contentWindow.getImageUrls) {
+              // Still Loading
+              loadingAnnotations = false;
+              return;
+            }
+            
             var imgs = jQuery("#image-input")[0].contentWindow.getImageUrls();
 
             jQuery.ajax({
@@ -354,6 +380,7 @@
         var image = jQuery(text_iframe.contentWindow.document.createElement("img"));
         if (editable == true) {
             image.attr('id', 'link_image');
+            image.addClass('textAlignment');
 
             document.getElementById('textStartOffset').value = startOffset;
             document.getElementById('startOffsetXpath').value = startOffsetXpath;
@@ -416,15 +443,23 @@
             var imageReaderUrl = "/" + modulePath
                 + "/imageReader.html?ui=embed&url="
                 + encodeURIComponent(newImageUrl);
-            if (mode == READ_MODE) {
-                refreshAnnotations();
-            } else {
+            if (mode != READ_MODE) {
                 imageReaderUrl += "&editable=true";
             }
-            jQuery('#image-input').attr('src', imageReaderUrl);
+
+            jQuery('#image-input').on('load',function(e) {
+                if (mode == READ_MODE) {
+                    refreshAnnotations();
+                }
+            }).attr('src', imageReaderUrl);
         }
     }
 
+    jQuery.fn.redirectImageReader = function(obj) {
+        updateImageReader({"added" : obj});
+        $("#lhs-select").select2("data", obj);
+    }
+    
     // Refresh the text reader with the text from the search bar
     function updateTextReader(arg) {
         if (arg && arg.added && arg.added.uri){
@@ -434,15 +469,17 @@
             var textReaderUrl = "/" + modulePath
                 + "/textReader.html?ui=embed&url="
                 + encodeURIComponent(newTextUrl);
-            if (mode == READ_MODE) {
-                refreshAnnotations();
-            } else {
+            if (mode != READ_MODE) {
                 textReaderUrl += "&editable=true";
             }
-            jQuery('#text-input').attr('src', textReaderUrl);
+
+            jQuery('#text-input').on('load',function(e) {
+                if (mode == READ_MODE) {
+                    refreshAnnotations();
+                }
+            }).attr('src',textReaderUrl);
         }
     }
-
 
     // Set the objectUrl in memory
     // READ MODE
@@ -520,9 +557,7 @@
     // Refresh the text and image iframe with annotations
     // READ MODE
     jQuery.fn.refreshOrUpdateAnnotations = function() {
-        var imageData = jQuery('#rhs-select').select2("data");
-        if (!imageData) return
-        loadAnnotations(qualifyURL(imageData.uri));
+        refreshAnnotations();
     }
 
     // Check if the selected area should be visible
@@ -833,6 +868,7 @@
                 .getElementById('svg-links');
         var image = text_iframe.contentWindow.document.createElement("img");
         image.setAttribute('id', 'link_image');
+        image.setAttribute('class', 'textAlignment');
         image.setAttribute('style', 'position: absolute; left: 6px; top: '
                 + verticalOffset + 'px; cursor: pointer; z-index: 2;');
         image.setAttribute('height', '16');
@@ -967,38 +1003,7 @@
         
         var imageUrl = qualifyURL(jQuery('#lhs-select').select2('data').uri);
         var textUrl = qualifyURL(jQuery('#rhs-select').select2('data').uri);
-        /** var createData = {
-                "@graph": [
-                 {
-                   "@id": "http://localhost/lorestore/oa/dummy",
-                   "@type": "oa:Annotation",
-                   "motivatedBy": {"@id": "austese:Alignment"},
-                   "hasTarget": {
-                       "@type": "oa:SpecificResource",
-                       "hasSelector": {
-                           "@type": "oa:FragmentSelector", 
-                           "value": "xywh=" + x + "," + y + "," + width + "," + height
-                       },
-                       "hasSource": {
-                           "@id": imageUrl, 
-                           "@type": "dctypes:Image"
-                       }
-                   },
-                   "hasTarget": {
-                       "@type": "oa:SpecificResource",
-                       "hasSelector": {
-                           "@type": "oa:FragmentSelector", 
-                           "value": "#xpath="+ startOffsetXpath + ","+ endOffsetXpath
-                       },
-                       "hasSource": {
-                           "@id": imageUrl, 
-                           "@type": "dctypes:Text"
-                       }
-                   }
-                 }
-                ]
-              }; */
-              
+
         var createData = "<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' "
                 + "xmlns:dc='http://purl.org/dc/elements/1.1/' "
                 + "xmlns:oa='http://www.w3.org/ns/oa#'>"
@@ -1042,9 +1047,8 @@
             },
             success : function(res) {
                 console.log("created alignment annotation",res)
-                /*objectUrl = jQuery(jQuery(res).children()[0])
+                objectUrl = jQuery(jQuery(res).children()[0])
                         .children()[0].getAttribute('rdf:about');
-                        */
             },
             error : function(xhr, status, error) {
                console.log("Error creating alignment",error, xhr,status);
@@ -1222,9 +1226,9 @@
         document.getElementById('image-input').src = "/" + modulePath
                 + "/imageReader.html?ui=embed&editable=true&url="
                 + encodeURIComponent(imageUrl);
-        document.getElementById('text-input').src = "/" + modulePath
-                + "/textReader.html?ui=embed&editable=true&url="
-                + encodeURIComponent(textUrl);
+        
+        clearAnnotations();
+        
         jQuery('#createNewRow').css('display', 'block');
         jQuery('#editRow').css('display', 'none');
         jQuery('#selectionRow').css('display', 'block');
@@ -1243,7 +1247,7 @@
         jQuery('#selectionRow').css('display', 'none');
         jQuery('#viewRow').css('display', 'block');
 
-        refreshAnnotations();
+        reloadAnnotations();
     }
 
     // Update view for EDIT MODE
@@ -1279,38 +1283,33 @@
 
         clearImageSelection();
 
-        document.getElementById('text-input').onload = function() {
-            document.getElementById('image-input').onload = function() {
-                addImageAndText(annotationID, objectUrl, src, index, x, y, w, h,
-                        startOffset, startOffsetXpath, endOffset,
-                        endOffsetXpath, true);
+        document.getElementById('image-input').onload = function() {
+            addImageAndText(annotationID, objectUrl, src, index, x, y, w, h,
+                    startOffset, startOffsetXpath, endOffset,
+                    endOffsetXpath, true);
 // FIXME
-                //jQuery('#imageUrl').val(src);
-                jQuery('#imageX').val(x);
-                jQuery('#imageY').val(y);
-                jQuery('#imageW').val(w);
-                jQuery('#imageH').val(h);
+            //jQuery('#imageUrl').val(src);
+            jQuery('#imageX').val(x);
+            jQuery('#imageY').val(y);
+            jQuery('#imageW').val(w);
+            jQuery('#imageH').val(h);
 
-                image_iframe.contentWindow.jumpToIndex(index);
+            image_iframe.contentWindow.jumpToIndex(index);
 
-                document.getElementById('image-input').onload = function() {}
-                document.getElementById('text-input').onload = function() {}
-            }
-            jQuery('#image-input').attr('src',"/"
-                    + modulePath
-                    + "/imageReader.html?ui=embed&editable=true&url="
-                    + encodeURIComponent(qualifyURL(jQuery('#lhs-select').select2('data').uri)));
+            document.getElementById('image-input').onload = function() {}
+            document.getElementById('text-input').onload = function() {}
         }
-        jQuery('#text-input').attr('src',"/" + modulePath
-                + "/textReader.html?ui=embed&editable=true&url="
-                + encodeURIComponent(qualifyURL(jQuery('#rhs-select').select2('data').uri)));
+        jQuery('#image-input').attr('src',"/"
+                + modulePath
+                + "/imageReader.html?ui=embed&editable=true&url="
+                + encodeURIComponent(qualifyURL(jQuery('#lhs-select').select2('data').uri)));
 
         jQuery('#createNewRow').css('display', 'none');
         jQuery('#editRow').css('display', 'block');
         jQuery('#selectionRow').css('display', 'block');
         jQuery('#viewRow').css('display', 'none');
 
-
+        clearAnnotations();
     }
 
     var setUpSearchFields = function(elem,type){
@@ -1382,7 +1381,7 @@
     setUpSearchFields(jQuery("#lhs-select"),'image');
     setUpSearchFields(jQuery("#rhs-select"),'text');
     
-    refreshAnnotations();
+    reloadAnnotations();
     
     // set up handlers
     jQuery('#lhs-select').on('change',updateImageReader);

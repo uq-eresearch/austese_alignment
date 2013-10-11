@@ -10,10 +10,146 @@ var areaSelect = {};
 var displayedPages = [];
 var numberPages = 1;
 
+var next, prev;
+
 jQuery(document).ready(function() {
     var editable = getUrlVars()["editable"] == 'true';
     br = new BookReader();
+    
+    var url = decodeURIComponent(getUrlVars()["url"])
+    url = url.substring(url.lastIndexOf("/") + 1);
+    
+    jQuery.ajax({
+        url : '/sites/all/modules/austese_repository/api/artefacts/?type=image&pageSize=1&searchField=facsimiles&query=' + url,
+        type : 'GET',
+        async: false,
+        processData: false,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        success : function(res) {
+          if (res.results[0]) {
+              var facsimiles = res.results[0].facsimiles;
+              var index = facsimiles.indexOf(url);
+              if (index != -1) {
+                if (index != 0) {
+                  prev = facsimiles[index - 1];
+                }
+                if (index != facsimiles.length - 1) {
+                  next = facsimiles[index + 1];
+                }
+                if (!prev || !next) {
+                  var artefactID = res.results[0].id; 
+                  jQuery.ajax({
+                      url : '/sites/all/modules/austese_repository/api/artefacts/?type=image&pageSize=1&searchField=artefacts&query=' + artefactID,
+                      type : 'GET',
+                      async: false,
+                      processData: false,
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      success : function(res) {
+                          if (res.results[0]) {
+                              var artefacts = res.results[0].artefacts;
+                              var index = artefacts.indexOf(artefactID);
+                              if (index != -1) {
+                                if (index != 0 && !prev) {
+                                  jQuery.ajax({
+                                    url : '/sites/all/modules/austese_repository/api/artefacts/' + artefacts[index - 1],
+                                    type : 'GET',
+                                    async: false,
+                                    processData: false,
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    success : function(res) {
+                                      var facsimiles = res.facsimiles;
+                                      if (facsimiles.length != 0) {
+                                        prev = facsimiles[facsimiles.length - 1];
+                                      }
+                                    },
+                                    error : function(xhr, status, error) {
+                                       console.log("Error retrieving artefacts",error, xhr,status);
+                                    }
+                                  });
+                                }
+                                if (index != artefacts.length - 1 && !next) {
+                                  jQuery.ajax({
+                                    url : '/sites/all/modules/austese_repository/api/artefacts/' + artefacts[index + 1],
+                                    type : 'GET',
+                                    async: false,
+                                    processData: false,
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    success : function(res) {
+                                      var facsimiles = res.facsimiles;
+                                      if (facsimiles.length != 0) {
+                                        next = facsimiles[0];
+                                      }
+                                    },
+                                    error : function(xhr, status, error) {
+                                       console.log("Error retrieving artefacts",error, xhr,status);
+                                    }
+                                  });
+                                }
+                              }
+                          }
+                      },
+                      error : function(xhr, status, error) {
+                         console.log("Error retrieving artefacts",error, xhr,status);
+                      }
+                  });
+                }
+              }
+            }
+        },
+        error : function(xhr, status, error) {
+           console.log("Error retrieving artefacts",error, xhr,status);
+        }
+    });
+        
     jQuery.extend(br, {
+        prev : function() {
+            if (prev) {
+              jQuery.ajax({
+                  url : '/sites/all/modules/austese_repository/api/resources/' + prev,
+                  type : 'GET',
+                  async: false,
+                  processData: false,
+                  headers: {
+                      'Accept': 'application/json'
+                  },
+                  success : function(res) {
+                      res.uri = "/sites/all/modules/austese_repository/api" + res.uri;
+                      parent.window.jQuery.fn.redirectImageReader(res);
+                  },
+                  error : function(xhr, status, error) {
+                     console.log("Error retrieving resource",error, xhr,status);
+                  }
+              });
+            }
+        },
+        next : function() {
+            if (next) {
+              jQuery.ajax({
+                  url : '/sites/all/modules/austese_repository/api/resources/' + next,
+                  type : 'GET',
+                  async: false,
+                  processData: false,
+                  headers: {
+                      'Accept': 'application/json'
+                  },
+                  success : function(res) {
+                      res.uri = "/sites/all/modules/austese_repository/api" + res.uri;
+                      parent.window.jQuery.fn.redirectImageReader(res);
+                  },
+                  error : function(xhr, status, error) {
+                     console.log("Error retrieving resource",error, xhr,status);
+                  }
+              });
+            }
+        },
         getPageWidth : function(index) {
             return 800;
         },
@@ -22,10 +158,6 @@ jQuery(document).ready(function() {
             return 1200;
         },
         getPageURI : function(index, reduce, rotate) {
-            //var leafStr = '000';
-            //var imgStr = (index+1).toString();
-            //var re = new RegExp("0{"+imgStr.length+"}$");
-            //var url = 'http://www.archive.org/download/BookReader/img/page'+leafStr.replace(re, imgStr) + '.jpg';
             if(getUrlVars()["url"]) {
               var url = decodeURIComponent(getUrlVars()["url"]);
             }

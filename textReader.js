@@ -7,32 +7,43 @@ function getUrlVars() {
     return vars;
 }
 
-window.onload = function() {		
+window.onload = function() {
     if (getUrlVars()["url"]) {
         url = decodeURIComponent(getUrlVars()["url"]);
     } 
+    window.editable = (getUrlVars()["editable"] == 'true');
 
     $.get(url, function (data) { 
         var injectedText = jQuery('#injected-text');
-        data = data.replace('\'', '\\\'');
-        data = '\'' + data + '\'';
-        injectedText.html(data);
-        var newHTML = injectedText.html();
-        injectedText.html(newHTML.substr(1,newHTML.length-2));
-        setTimeout(iResize, 50);
-				
-				parent.window.jQuery.fn.refreshOrUpdateAnnotations();
-    });
+        
+        if (data.replace) {
+          data = data.replace('\'', '\\\'');
+          data = '\'' + data + '\'';
+          injectedText.html(data);
+          
+          var newHTML = injectedText.html();
+          injectedText.html(newHTML.substr(1,newHTML.length-2));
 
-    jQuery('#injected-text').load(url, function() {
-        setTimeout(iResize, 50);
+          setTimeout(iResize, 50);
+          parent.window.jQuery.fn.refreshOrUpdateAnnotations();
+        } else {
+          $.get('/sites/all/modules/austese_repository/ui/xslt/formats.xsl', function (xsl) { 
+            var xsltProcessor=new XSLTProcessor();
+            xsltProcessor.importStylesheet(xsl);
+            var result = xsltProcessor.transformToFragment(data,document);
+            injectedText.html(result);
+
+            setTimeout(iResize, 50);
+            parent.window.jQuery.fn.refreshOrUpdateAnnotations();
+          });
+        }
     });
 
     jQuery("#container-div-2").scroll(function() {
         jQuery("#container-div-1").scrollTop(jQuery("#container-div-2").scrollTop());
     });
 
-    if (getUrlVars()["editable"] == 'true') {
+    if (window.editable) {
         jQuery("#container-div-1").click(function() {
            clearSelected();
         });
@@ -71,6 +82,10 @@ function focusText(img) {
     var endOffsetXpath = img.getAttribute('endOffsetXpath');
 
     focusTextOffsetsWithXPaths(startOffset, startOffsetXpath, endOffset, endOffsetXpath);
+}
+
+function setEditable(bool) {
+    window.editable = bool;
 }
 
 function focusTextOffsetsWithXPaths(startOffset, startOffsetXpath, endOffset, endOffsetXpath) {
@@ -187,7 +202,7 @@ function highlightImage(img, sync, pageX, pageY) {
 
         focusText(img);
 
-        if (getUrlVars()["editable"] != 'true') {
+        if (!window.editable) {
             parent.window.jQuery.fn.setObjectUrl(img.getAttribute("objectUrl"));
             parent.window.jQuery.fn.cycleImageZIndex(img.getAttribute("id").substring(5));
             parent.window.jQuery.fn.setSelectedImage(img.getAttribute("objectUrl"), img.getAttribute('index'));
@@ -207,7 +222,7 @@ function highlightImage(img, sync, pageX, pageY) {
 
         focusText(nextElement);
 
-        if (getUrlVars()["editable"] != 'true') {
+        if (!window.editable) {
             parent.window.jQuery.fn.setObjectUrl(nextElement.getAttribute("objectUrl"));
             parent.window.jQuery.fn.cycleImageZIndex(nextElement.getAttribute("id").substring(5));
             parent.window.jQuery.fn.setSelectedImage(nextElement.getAttribute("objectUrl"), nextElement.getAttribute('index'));
