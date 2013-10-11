@@ -456,8 +456,9 @@
     }
 
     jQuery.fn.redirectImageReader = function(obj) {
-        updateImageReader({"added" : obj});
         $("#lhs-select").select2("data", obj);
+
+        refreshAnnotations();
     }
     
     // Refresh the text reader with the text from the search bar

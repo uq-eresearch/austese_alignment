@@ -10,15 +10,17 @@ var areaSelect = {};
 var displayedPages = [];
 var numberPages = 1;
 
-var next, prev;
+var url, uris, editable, next, prev;
 
 jQuery(document).ready(function() {
-    var editable = getUrlVars()["editable"] == 'true';
+    editable = getUrlVars()["editable"] == 'true';
     br = new BookReader();
     
-    var url = decodeURIComponent(getUrlVars()["url"])
+    url = decodeURIComponent(getUrlVars()["url"])
     url = url.substring(url.lastIndexOf("/") + 1);
-    
+
+    uris = [];
+
     jQuery.ajax({
         url : '/sites/all/modules/austese_repository/api/artefacts/?type=image&pageSize=1&searchField=facsimiles&query=' + url,
         type : 'GET',
@@ -28,20 +30,23 @@ jQuery(document).ready(function() {
             'Content-Type': 'application/json'
         },
         success : function(res) {
-          if (res.results[0]) {
-              var facsimiles = res.results[0].facsimiles;
-              var index = facsimiles.indexOf(url);
-              if (index != -1) {
-                if (index != 0) {
-                  prev = facsimiles[index - 1];
-                }
-                if (index != facsimiles.length - 1) {
-                  next = facsimiles[index + 1];
-                }
-                if (!prev || !next) {
-                  var artefactID = res.results[0].id; 
-                  jQuery.ajax({
-                      url : '/sites/all/modules/austese_repository/api/artefacts/?type=image&pageSize=1&searchField=artefacts&query=' + artefactID,
+          if (res && res.results && res.results.length == 1) {
+            var artefactID = res.results[0].id;
+            var facsimiles = res.results[0].facsimiles;
+            jQuery.ajax({
+              url : '/sites/all/modules/austese_repository/api/artefacts/?type=image&pageSize=1&searchField=artefacts&query=' + artefactID,
+              type : 'GET',
+              async: false,
+              processData: false,
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              success : function(res) {
+                if (res && res.results && res.results.length == 1) {
+                  var artefacts = res.results[0].artefacts;
+                  for (var i in artefacts) {
+                    jQuery.ajax({
+                      url : '/sites/all/modules/austese_repository/api/artefacts/' + artefacts[i],
                       type : 'GET',
                       async: false,
                       processData: false,
@@ -49,66 +54,31 @@ jQuery(document).ready(function() {
                           'Content-Type': 'application/json'
                       },
                       success : function(res) {
-                          if (res.results[0]) {
-                              var artefacts = res.results[0].artefacts;
-                              var index = artefacts.indexOf(artefactID);
-                              if (index != -1) {
-                                if (index != 0 && !prev) {
-                                  jQuery.ajax({
-                                    url : '/sites/all/modules/austese_repository/api/artefacts/' + artefacts[index - 1],
-                                    type : 'GET',
-                                    async: false,
-                                    processData: false,
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    success : function(res) {
-                                      var facsimiles = res.facsimiles;
-                                      if (facsimiles.length != 0) {
-                                        prev = facsimiles[facsimiles.length - 1];
-                                      }
-                                    },
-                                    error : function(xhr, status, error) {
-                                       console.log("Error retrieving artefacts",error, xhr,status);
-                                    }
-                                  });
-                                }
-                                if (index != artefacts.length - 1 && !next) {
-                                  jQuery.ajax({
-                                    url : '/sites/all/modules/austese_repository/api/artefacts/' + artefacts[index + 1],
-                                    type : 'GET',
-                                    async: false,
-                                    processData: false,
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    success : function(res) {
-                                      var facsimiles = res.facsimiles;
-                                      if (facsimiles.length != 0) {
-                                        next = facsimiles[0];
-                                      }
-                                    },
-                                    error : function(xhr, status, error) {
-                                       console.log("Error retrieving artefacts",error, xhr,status);
-                                    }
-                                  });
-                                }
-                              }
-                          }
+                        var facsimiles = res.facsimiles;
+                        for (var i in facsimiles) {
+                          uris.push(facsimiles[i]);
+                        }
                       },
                       error : function(xhr, status, error) {
                          console.log("Error retrieving artefacts",error, xhr,status);
                       }
-                  });
+                    });
+                  }
+                } else if (res && res.results && res.results.length == 0) {
+                  uris = facsimiles;
                 }
+              },
+              error : function(xhr, status, error) {
+                 console.log("Error retrieving artefacts",error, xhr,status);
               }
-            }
+            });
+          }
         },
         error : function(xhr, status, error) {
            console.log("Error retrieving artefacts",error, xhr,status);
         }
     });
-        
+
     jQuery.extend(br, {
         prev : function() {
             if (prev) {
@@ -122,6 +92,10 @@ jQuery(document).ready(function() {
                   },
                   success : function(res) {
                       res.uri = "/sites/all/modules/austese_repository/api" + res.uri;
+                      
+                      url = res.id;
+                      initBookreader();
+                      
                       parent.window.jQuery.fn.redirectImageReader(res);
                   },
                   error : function(xhr, status, error) {
@@ -142,6 +116,10 @@ jQuery(document).ready(function() {
                   },
                   success : function(res) {
                       res.uri = "/sites/all/modules/austese_repository/api" + res.uri;
+                      
+                      url = res.id;
+                      initBookreader();
+                      
                       parent.window.jQuery.fn.redirectImageReader(res);
                   },
                   error : function(xhr, status, error) {
@@ -158,10 +136,7 @@ jQuery(document).ready(function() {
             return 1200;
         },
         getPageURI : function(index, reduce, rotate) {
-            if(getUrlVars()["url"]) {
-              var url = decodeURIComponent(getUrlVars()["url"]);
-            }
-            return url;
+            return "/sites/all/modules/austese_repository/api/resources/" + url;
         },
         getPageSide : function(index) {
             if (0 == (index & 0x1)) {
@@ -266,6 +241,20 @@ jQuery(document).ready(function() {
         }
     });
 
+    initBookreader();
+});
+
+function initBookreader() {
+    var index = uris.indexOf(url);
+    if (index != -1) {
+      if (index != 0) {
+        prev = uris[index - 1];
+      }
+      if (index != uris.length - 1) {
+        next = uris[index + 1];
+      }
+    }
+
     br.init();
 
     // Limit the interfaces the user can see
@@ -281,7 +270,7 @@ jQuery(document).ready(function() {
     if (editable) {
         jQuery('#BRcontainer').attr('onscroll','clearSelection();');
     }
-});
+}
 
 function diff(array1, array2) {
     var res = [];
