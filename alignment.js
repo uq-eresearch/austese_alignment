@@ -159,7 +159,8 @@
 
                                         if (res1.match(patt2)) {
                                             jQuery(imgs).each(function(index, element) {
-                                                if (res1.match(patt2) && res1.indexOf(element) != -1) {
+                                                var res1Url = res1.substring(0, res1.indexOf("#"));
+                                                if (res1.match(patt2) && res1Url.substring(res1Url.length - element.length, res1Url.length) == element) {
                                                     matchs = res1.match(patt2);
                                                     numbers = matchs.toString()
                                                             .match(patt4);
@@ -192,7 +193,8 @@
 
                                         if (res2.match(patt2)) {
                                             jQuery(imgs).each(function(index, element) {
-                                                if (res2.match(patt2) && res2.indexOf(element) != -1) {
+                                                var res2Url = res2.substring(0, res2.indexOf("#"));
+                                                if (res2.match(patt2) && res2Url.substring(res2Url.length - element.length, res2Url.length) == element) {
                                                     matchs = res2.match(patt2);
                                                     numbers = matchs.toString()
                                                             .match(patt4);
