@@ -12,6 +12,31 @@ var numberPages = 1;
 
 var url, uris, editable, next, prev;
 
+function getFacsimilesFromArtefact(artefactID) {
+  jQuery.ajax({
+    url : '/sites/all/modules/austese_repository/api/artefacts/' + artefactID,
+    type : 'GET',
+    async: false,
+    processData: false,
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    success : function(res) {    
+      var facsimiles = res.facsimiles;
+      for (var i in facsimiles) {
+        uris.push(facsimiles[i]);
+      }
+      var artefacts = res.artefacts;
+      for (var i in artefacts) {
+        getFacsimilesFromArtefact(artefacts[i]);
+      }
+    },
+    error : function(xhr, status, error) {
+       console.log("Error retrieving artefacts",error, xhr,status);
+    }
+  });
+}
+
 jQuery(document).ready(function() {
     editable = getUrlVars()["editable"] == 'true';
     br = new BookReader();
@@ -32,46 +57,41 @@ jQuery(document).ready(function() {
         success : function(res) {
           if (res && res.results && res.results.length == 1) {
             var artefactID = res.results[0].id;
+            var rootFound = false;
+            var artefacts = [];
             var facsimiles = res.results[0].facsimiles;
-            jQuery.ajax({
-              url : '/sites/all/modules/austese_repository/api/artefacts/?type=image&pageSize=1&searchField=artefacts&query=' + artefactID,
-              type : 'GET',
-              async: false,
-              processData: false,
-              headers: {
-                  'Content-Type': 'application/json'
-              },
-              success : function(res) {
-                if (res && res.results && res.results.length == 1) {
-                  var artefacts = res.results[0].artefacts;
-                  for (var i in artefacts) {
-                    jQuery.ajax({
-                      url : '/sites/all/modules/austese_repository/api/artefacts/' + artefacts[i],
-                      type : 'GET',
-                      async: false,
-                      processData: false,
-                      headers: {
-                          'Content-Type': 'application/json'
-                      },
-                      success : function(res) {
-                        var facsimiles = res.facsimiles;
-                        for (var i in facsimiles) {
-                          uris.push(facsimiles[i]);
-                        }
-                      },
-                      error : function(xhr, status, error) {
-                         console.log("Error retrieving artefacts",error, xhr,status);
-                      }
-                    });
+            
+            while (!rootFound) {
+              jQuery.ajax({
+                url : '/sites/all/modules/austese_repository/api/artefacts/?type=image&pageSize=1&searchField=artefacts&query=' + artefactID,
+                type : 'GET',
+                async: false,
+                processData: false,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                success : function(res) {
+                  if (res && res.results && res.results.length == 1) {
+                    artefactID = res.results[0].id;
+                    artefacts = res.results[0].artefacts;
+                    if (res.results[0].facsimiles) {
+                      facsimiles = res.results[0].facsimiles;
+                    } else {
+                      facsimiles = []
+                    }
+                  } else {
+                    rootFound = true;
                   }
-                } else if (res && res.results && res.results.length == 0) {
-                  uris = facsimiles;
+                },
+                error : function(xhr, status, error) {
+                   console.log("Error retrieving artefacts",error, xhr,status);
                 }
-              },
-              error : function(xhr, status, error) {
-                 console.log("Error retrieving artefacts",error, xhr,status);
-              }
-            });
+              });
+            }
+            
+            for (var i = 0; i < artefacts.length; i++) {
+              getFacsimilesFromArtefact(artefacts[i]);
+            }
           }
         },
         error : function(xhr, status, error) {
