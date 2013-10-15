@@ -1327,7 +1327,7 @@
                         query: term,
                         type: type,
                         pageSize: 10,
-                        page: page
+                        pageIndex: page
                     };
                     if (project) {
                         searchParams.project = project;
