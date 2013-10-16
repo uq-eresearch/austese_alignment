@@ -861,6 +861,7 @@
         markerEl.appendChild(text_iframe.contentWindow.document
                 .createTextNode(markerTextChar));
         range.insertNode(markerEl);
+        text_iframe.contentWindow.scrollIntoView(markerEl);
 
         var verticalOffset = markerEl.offsetTop;
         var parent = markerEl.parentNode;

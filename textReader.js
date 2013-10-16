@@ -258,6 +258,12 @@ function scrollFirstAnnotationIntoView() {
     }
 }
 
+function scrollIntoView(obj) {
+    jQuery("#container-div-1").scrollTop(obj.offsetTop - (jQuery("#container-div-1")[0].offsetHeight / 4));
+    jQuery("#container-div-2").scrollTop(jQuery("#container-div-1").scrollTop());
+    jQuery("#container-div-1").scrollTop(jQuery("#container-div-2").scrollTop());
+}
+
 function clearSelected(){
     jQuery("[selected=selected]").css("z-index","1");
     jQuery("[selected=selected]").css("z-index");

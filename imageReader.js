@@ -12,10 +12,15 @@ var numberPages = 1;
 
 var url, uris, editable, next, prev;
 
-function getFacsimilesFromArtefact(artefactID) {
+function getFacsimilesFromArtefact(artefactID, treePath) {
+  if (treePath.indexOf(artefactID) != -1) {
+    return;
+  }
+  treePath.push(artefactID);
   jQuery.ajax({
     url : '/sites/all/modules/austese_repository/api/artefacts/' + artefactID,
     type : 'GET',
+    timeout: 60000,
     async: false,
     processData: false,
     headers: {
@@ -28,7 +33,7 @@ function getFacsimilesFromArtefact(artefactID) {
       }
       var artefacts = res.artefacts;
       for (var i in artefacts) {
-        getFacsimilesFromArtefact(artefacts[i]);
+        getFacsimilesFromArtefact(artefacts[i], treePath);
       }
     },
     error : function(xhr, status, error) {
@@ -61,10 +66,13 @@ jQuery(document).ready(function() {
             var artefacts = [];
             var facsimiles = res.results[0].facsimiles;
             
+            var treePath = [artefactID];
+            
             while (!rootFound) {
               jQuery.ajax({
                 url : '/sites/all/modules/austese_repository/api/artefacts/?type=image&pageSize=1&searchField=artefacts&query=' + artefactID,
                 type : 'GET',
+                timeout: 60000,
                 async: false,
                 processData: false,
                 headers: {
@@ -72,13 +80,34 @@ jQuery(document).ready(function() {
                 },
                 success : function(res) {
                   if (res && res.results && res.results.length == 1) {
-                    artefactID = res.results[0].id;
-                    artefacts = res.results[0].artefacts;
-                    if (res.results[0].facsimiles) {
-                      facsimiles = res.results[0].facsimiles;
-                    } else {
-                      facsimiles = []
-                    }
+                    jQuery.ajax({
+                      url : '/sites/all/modules/austese_repository/api/artefacts/' + res.results[0].id,
+                      type : 'GET',
+                      timeout: 60000,
+                      async: false,
+                      processData: false,
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      success : function() {
+                        artefactID = res.results[0].id;
+                        
+                        if (treePath.indexOf(artefactID) != -1) {
+                          rootFound = true;
+                        } else {
+                          treePath.push(artefactID);
+                          artefacts = res.results[0].artefacts;
+                          if (res.results[0].facsimiles) {
+                            facsimiles = res.results[0].facsimiles;
+                          } else {
+                            facsimiles = []
+                          }
+                        }
+                      },
+                      error : function(xhr, status, error) {
+                        rootFound = true;
+                      }
+                    });
                   } else {
                     rootFound = true;
                   }
@@ -88,9 +117,11 @@ jQuery(document).ready(function() {
                 }
               });
             }
-            
+
+            treePath = [];
+
             for (var i = 0; i < artefacts.length; i++) {
-              getFacsimilesFromArtefact(artefacts[i]);
+              getFacsimilesFromArtefact(artefacts[i], treePath);
             }
           }
         },
@@ -105,6 +136,7 @@ jQuery(document).ready(function() {
               jQuery.ajax({
                   url : '/sites/all/modules/austese_repository/api/resources/' + prev,
                   type : 'GET',
+                  timeout: 60000,
                   async: false,
                   processData: false,
                   headers: {
@@ -129,6 +161,7 @@ jQuery(document).ready(function() {
               jQuery.ajax({
                   url : '/sites/all/modules/austese_repository/api/resources/' + next,
                   type : 'GET',
+                  timeout: 60000,
                   async: false,
                   processData: false,
                   headers: {
