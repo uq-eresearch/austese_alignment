@@ -258,6 +258,96 @@ jQuery(document).ready(function() {
 
         getEmbedCode : function(frameWidth, frameHeight, viewParams) {
             return "Embed code not supported";
+        },
+        initNavbar : function() {
+          $('#BookReader').append(
+              '<div id="BRnav">'
+              +     '<div id="BRpage">'   // Page turn buttons
+              +         '<button class="BRicon onepg"></button>'
+              +         '<button class="BRicon twopg"></button>'
+              +         '<button class="BRicon thumb"></button>'
+              // $$$ not yet implemented
+              //+         '<button class="BRicon fit"></button>'
+              +         '<button class="BRicon zoom_in"></button>'
+              +         '<button class="BRicon zoom_out"></button>'
+              +         '<button class="BRicon book_left"></button>'
+              +         '<button class="BRicon book_right"></button>'
+              +     '</div>'
+              +     '<div id="BRnavpos">' // Page slider and nav line
+              //+         '<div id="BRfiller"></div>'
+              +         '<div id="BRpager"></div>'  // Page slider
+              +         '<div id="BRnavline">'      // Nav line with e.g. chapter markers
+              +             '<div class="BRnavend" id="BRnavleft"></div>'
+              +             '<div class="BRnavend" id="BRnavright"></div>'
+              +         '</div>'     
+              +     '</div>'
+              +     '<div id="BRnavCntlBtm" class="BRnavCntl BRdn"></div>'
+              + '</div>'
+          );
+
+          $('#BRpager').slider({
+              animate: true,
+              min: 0,
+              max: (uris.length != 0) ? uris.length - 1 : 1,
+              value: (uris.length != 0) ? uris.indexOf(url) - 1 : 0
+          })
+          .bind('slide', function(event, ui) {
+              if (uris.length != 0) {
+                $('#pagenum .currentpage').text(ui.value + 1 + ' / ' + uris.length);
+              } else {
+                $('#pagenum .currentpage').text('1/1');
+              }
+              $("#pagenum").show();
+              return true;
+          })
+          .bind('slidechange', function(event, ui) {
+              if (uris.length != 0) {
+                $('#pagenum .currentpage').text(ui.value + 1 + ' / ' + uris.length);
+              } else {
+                $('#pagenum .currentpage').text('1/1');
+              }
+              $("#pagenum").hide();
+              
+              jQuery.ajax({
+                  url : '/sites/all/modules/austese_repository/api/resources/' + uris[ui.value],
+                  type : 'GET',
+                  async: false,
+                  processData: false,
+                  headers: {
+                      'Accept': 'application/json'
+                  },
+                  success : function(res) {
+                      res.uri = "/sites/all/modules/austese_repository/api" + res.uri;
+                      
+                      url = res.id;
+                      initBookreader();
+                      
+                      parent.window.jQuery.fn.redirectImageReader(res);
+                  },
+                  error : function(xhr, status, error) {
+                     console.log("Error retrieving resource",error, xhr,status);
+                  }
+              });
+              
+              return true;
+          })
+          .hover(function() {
+                  $("#pagenum").show();
+              },function(){
+                  $("#pagenum").hide();
+              }
+          );
+          
+          var handleHelper = $('#BRpager .ui-slider-handle')
+            .append('<div id="pagenum"><span class="currentpage"></span></div>');
+          
+          if (uris.length != 0) {
+            $('#pagenum .currentpage').text(uris.indexOf(url) + 1 + ' / ' + uris.length);
+          } else {
+            $('#pagenum .currentpage').text('1/1');
+          }
+
+          $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
         }
     });
 
@@ -407,7 +497,7 @@ function jumpToIndex(index) {
 
 function setSelectedImage(objectUrl, index) {
     clearSelectedImage();
-    br.jumpToIndex(index);
+    //br.jumpToIndex(index);
     highlightImageWhenAppears(objectUrl, 0)
 }
 
