@@ -132,7 +132,7 @@ jQuery(document).ready(function() {
 
     jQuery.extend(br, {
         prev : function() {
-            if (prev) {
+            if (prev && !editable) {
               jQuery.ajax({
                   url : '/sites/all/modules/austese_repository/api/resources/' + prev,
                   type : 'GET',
@@ -157,7 +157,7 @@ jQuery(document).ready(function() {
             }
         },
         next : function() {
-            if (next) {
+            if (next && !editable) {
               jQuery.ajax({
                   url : '/sites/all/modules/austese_repository/api/resources/' + next,
                   type : 'GET',
