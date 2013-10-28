@@ -392,9 +392,13 @@ function initBookreader() {
     if (index != -1) {
       if (index != 0) {
         prev = uris[index - 1];
+      } else {
+        prev = '';
       }
       if (index != uris.length - 1) {
         next = uris[index + 1];
+      } else {
+        next = '';
       }
     }
 
