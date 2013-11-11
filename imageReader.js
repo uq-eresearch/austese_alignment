@@ -143,8 +143,6 @@ jQuery(document).ready(function() {
                       'Accept': 'application/json'
                   },
                   success : function(res) {
-                      res.uri = "/sites/all/modules/austese_repository/api" + res.uri;
-                      
                       url = res.id;
                       initBookreader();
                       
@@ -167,9 +165,7 @@ jQuery(document).ready(function() {
                   headers: {
                       'Accept': 'application/json'
                   },
-                  success : function(res) {
-                      res.uri = "/sites/all/modules/austese_repository/api" + res.uri;
-                      
+                  success : function(res) {                      
                       url = res.id;
                       initBookreader();
                       
