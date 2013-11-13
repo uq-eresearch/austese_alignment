@@ -31,15 +31,8 @@
         var textUrl = qualifyURL(textData.uri);
         if (!dummy){
             document.getElementById('text-input').contentWindow.setEditable(false);
-            jQuery('#image-input').on('load',function(e) {
-                // Remove onload functions
-                jQuery('#image-input').off();
-                jQuery('#text-input').off();
-                loadAnnotations(textUrl);
-            }).attr('src',"/" + modulePath
-                + "/imageReader.html?ui=embed&url="
-                + encodeURIComponent(imageUrl)
-            );
+            document.getElementById('image-input').contentWindow.setEditable(false);
+            loadAnnotations(textUrl);
         }
     }
     // create fully qualified URL from relative URL
@@ -268,7 +261,7 @@
             rectDiv.attr('id', 'Image_' + annotationID).addClass('imgAlignment');
         }
 
-        if (w == 0 && h == 0) {
+        if (imgWidth && imgHeight && w == 0 && h == 0) {
             rectDiv.attr('objectUrl', objectUrl).attr('x', x).attr('y', y)
                     .attr('w', w).attr('h', h).attr('class','entireImage').css({
                         'position' : 'absolute',
@@ -326,8 +319,6 @@
                     });
                 }
             }
-        } else {
-            return;
         }
 
         var verticalOffset = 30;
@@ -1227,11 +1218,9 @@
         }
         var textUrl = qualifyURL(jQuery('#rhs-select').select2('data').uri);
         
-        document.getElementById('image-input').src = "/" + modulePath
-                + "/imageReader.html?ui=embed&editable=true&url="
-                + encodeURIComponent(imageUrl);
-        
         clearAnnotations();
+        
+        document.getElementById('image-input').contentWindow.setEditable(true);
         
         jQuery('#createNewRow').css('display', 'block');
         jQuery('#editRow').css('display', 'none');
@@ -1287,26 +1276,7 @@
 
         clearImageSelection();
 
-        document.getElementById('image-input').onload = function() {
-            addImageAndText(annotationID, objectUrl, src, index, x, y, w, h,
-                    startOffset, startOffsetXpath, endOffset,
-                    endOffsetXpath, true);
-// FIXME
-            //jQuery('#imageUrl').val(src);
-            jQuery('#imageX').val(x);
-            jQuery('#imageY').val(y);
-            jQuery('#imageW').val(w);
-            jQuery('#imageH').val(h);
-
-            image_iframe.contentWindow.jumpToIndex(index);
-
-            document.getElementById('image-input').onload = function() {}
-            document.getElementById('text-input').onload = function() {}
-        }
-        jQuery('#image-input').attr('src',"/"
-                + modulePath
-                + "/imageReader.html?ui=embed&editable=true&url="
-                + encodeURIComponent(qualifyURL(jQuery('#lhs-select').select2('data').uri)));
+        document.getElementById('image-input').contentWindow.setEditable(true);
 
         jQuery('#createNewRow').css('display', 'none');
         jQuery('#editRow').css('display', 'block');
@@ -1314,6 +1284,16 @@
         jQuery('#viewRow').css('display', 'none');
 
         clearAnnotations();
+        
+        addImageAndText(annotationID, objectUrl, src, index, x, y, w, h,
+                startOffset, startOffsetXpath, endOffset,
+                endOffsetXpath, true);
+//FIXME
+        //jQuery('#imageUrl').val(src);
+        jQuery('#imageX').val(x);
+        jQuery('#imageY').val(y);
+        jQuery('#imageW').val(w);
+        jQuery('#imageH').val(h);
     }
 
     var setUpSearchFields = function(elem,type){

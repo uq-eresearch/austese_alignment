@@ -12,6 +12,34 @@ var numberPages = 1;
 
 var url, uris, editable, next, prev;
 
+function setEditable(bool) {
+    editable = bool;
+    if (editable) {
+    	areaSelect['#pagediv0'] = jQuery('#pagediv0').children().imgAreaSelect({
+            handles: true,
+            instance: true,
+            parent: jQuery('#pagediv0'),
+            onSelectEnd: function(img, selection) {
+              jQuery('#imageX1').val((selection.x1 * 100)/jQuery(img).width());
+              jQuery('#imageY1').val((selection.y1 * 100)/jQuery(img).height());
+              jQuery('#imageX2').val((selection.x2 * 100)/jQuery(img).width());
+              jQuery('#imageY2').val((selection.y2 * 100)/jQuery(img).height());
+            }
+        });
+    	jQuery('#pagediv0').children().mousedown(function() {
+            clearOtherSelection('#' + jQuery(this).parent().attr('id'));
+        }).css("cursor","auto");
+    	
+    	$('#BRpager').slider( "option", "disabled", true );
+    } else {
+    	areaSelect['#pagediv0'].remove();
+    	delete areaSelect['#pagediv0'];    	
+    	jQuery('#selectedImage').remove();    	
+    	jQuery('#pagediv0').children().css("cursor","move");
+    	$('#BRpager').slider( "option", "disabled", false );
+    }
+}
+
 function getFacsimilesFromArtefact(artefactID, treePath) {
   if (treePath.indexOf(artefactID) != -1) {
     return;
