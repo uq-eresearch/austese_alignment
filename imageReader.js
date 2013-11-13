@@ -37,6 +37,11 @@ function setEditable(bool) {
     	jQuery('#selectedImage').remove();    	
     	jQuery('#pagediv0').children().css("cursor","move");
     	$('#BRpager').slider( "option", "disabled", false );
+    	
+    	var parent = jQuery("#pagediv0").parent();
+    	var html = jQuery("#pagediv0")[0].outerHTML;
+    	jQuery("#pagediv0").remove();
+    	parent.append(html);
     }
 }
 
