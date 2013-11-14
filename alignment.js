@@ -31,8 +31,16 @@
         var textUrl = qualifyURL(textData.uri);
         if (!dummy){
             document.getElementById('text-input').contentWindow.setEditable(false);
-            document.getElementById('image-input').contentWindow.setEditable(false);
-            loadAnnotations(textUrl);
+            jQuery('#image-input').on('load',function(e) {
+                // Remove onload functions
+                jQuery('#image-input').off();
+                loadAnnotations(textUrl);
+            }).attr('src',"/" + modulePath
+                + "/imageReader.html?ui=embed&url="
+                + encodeURIComponent(imageUrl)
+            );
+            //document.getElementById('image-input').contentWindow.setEditable(false);
+            //loadAnnotations(textUrl);
         }
     }
     // create fully qualified URL from relative URL
@@ -78,6 +86,7 @@
     
     function clearAnnotations() {
         jQuery("#image-input").contents().find('.imgAlignment').remove();
+        jQuery("#image-input").contents().find('.entireImage').remove();
         jQuery("#text-input").contents().find('.textAlignment').remove();
         alignmentsInMemory = [];
     }
@@ -1184,13 +1193,14 @@
         jQuery.ajax({
             url : objectUrl,
             type : 'DELETE',
-            async : false,
             contentType : "application/rdf+xml",
             xhrFields : {
                 withCredentials : true
             },
             success : function(res) {
-
+                clearImageSelection();
+                clearTextSelection();
+                viewAlignment();
             },
             error : function(xhr, testStatus, error) {
 
@@ -1200,10 +1210,6 @@
                 }
             }
         });
-
-        clearImageSelection();
-        clearTextSelection();
-        viewAlignment();
     }
 
     // Update view for CREATE MODE
