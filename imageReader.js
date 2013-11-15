@@ -382,7 +382,7 @@ jQuery(document).ready(function() {
                       'Accept': 'application/json'
                   },
                   success : function(res) {
-                      res.uri = "/sites/all/modules/austese_repository/api" + res.uri;
+                      res.uri = res.uri;
                       
                       url = res.id;
                       initBookreader();
