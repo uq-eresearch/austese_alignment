@@ -247,193 +247,199 @@
     // READ MODE
     function addImageAndText(annotationID, objectUrl, src, index, x, y, w, h, startOffset,
             startOffsetXpath, endOffset, endOffsetXpath, editable) {
-        var img = jQuery(jQuery("#image-input").contents().find('img[src="' + src + '"]')[0]);
-        var imgHeight = img.height();
-        var imgWidth = img.width();
-
-        var rectDiv = jQuery("<div></div>");
-
-        if (editable == true) {
-            rectDiv.attr('id', 'selectedImage').attr(
-                    'onclick',
-                    'resetImage(' + x  + ',' + y + ','
-                            + (parseFloat(x, 10) + parseFloat(w, 10)) + ','
-                            + (parseFloat(y, 10) + parseFloat(h, 10)) + ')');
-            jQuery('#imageX').val(x);
-            jQuery('#imageY').val(y);
-            jQuery('#imageW').val(w);
-            jQuery('#imageH').val(h);
-            jQuery('#image-selection').html(
-                    "Image Selection " + Math.round((w * imgWidth) / 100)  + " x " 
-                    + Math.round((h * imgHeight) / 100) + " px");
-        } else {
-            rectDiv.attr('id', 'Image_' + annotationID).addClass('imgAlignment');
-        }
-
-        if (imgWidth && imgHeight && w == 0 && h == 0) {
-            rectDiv.attr('objectUrl', objectUrl).attr('x', x).attr('y', y)
-                    .attr('w', w).attr('h', h).attr('class','entireImage').css({
-                        'position' : 'absolute',
-                        'overflow-x' : 'hidden',
-                        'overflow-y' : 'hidden',
-                        'z-index' : '2',
-                        'x' : 0,
-                        'y' : 0,
-                        'w' : 0,
-                        'h' : 0,
-                        'display' : 'block',
-                        'opacity' : '0',
-                        'filter' : 'alpha(opacity=0)',
-                        'background-color' : 'rgb(255, 255, 255)',
-                        'cursor' : 'pointer',
-                        'left' : 0,
-                        'top' : 0,
-                        'width' : '100%',
-                        'height' : '100%'
-                    });
-        } else {
-            rectDiv.attr('objectUrl', objectUrl).attr('x', x).attr('y', y)
-                    .attr('w', w).attr('h', h).css({
-                        'position' : 'absolute',
-                        'overflow-x' : 'hidden',
-                        'overflow-y' : 'hidden',
-                        'z-index' : '2',
-                        'x' : x,
-                        'y' : y,
-                        'w' : w,
-                        'h' : h,
-                        'display' : 'block',
-                        'opacity' : '0.4',
-                        'filter' : 'alpha(opacity=40)',
-                        'background-color' : 'rgb(127, 127, 0)',
-                        'cursor' : 'pointer',
-                        'border' : '3px solid yellow',
-                        'left' : ((x * imgWidth) / 100.00) + 'px',
-                        'top' : ((y * imgHeight) / 100.00) + 'px',
-                        'width' : (((w * imgWidth) / 100.00) - 6) + 'px',
-                        'height' : (((h * imgHeight) / 100.00) - 6) + 'px'
-                    });        
-        }
-        if (img && img.length == 1) {
-            var pagediv = img.parent();
-            if (editable == true && w == 0 && h == 0) {
-                clearImageSelection();
-            } else {
-                jQuery("#image-input").contents().find('img[src="' + src + '"]').parent().append(rectDiv);
-                
-                if (editable == false) {
-                    rectDiv.on('click', function(e){
-                        var image_iframe = document.getElementById('image-input');
-                        image_iframe.contentWindow.focusImageSelection(this, true, e.pageX, e.pageY);
-                    });
-                }
+    	try {
+	        var img = jQuery(jQuery("#image-input").contents().find('img[src="' + src + '"]')[0]);
+	        var imgHeight = img.height();
+	        var imgWidth = img.width();
+	
+	        var rectDiv = jQuery("<div></div>");
+	
+	        if (editable == true) {
+	            rectDiv.attr('id', 'selectedImage').attr(
+	                    'onclick',
+	                    'resetImage(' + x  + ',' + y + ','
+	                            + (parseFloat(x, 10) + parseFloat(w, 10)) + ','
+	                            + (parseFloat(y, 10) + parseFloat(h, 10)) + ')');
+	            jQuery('#imageX').val(x);
+	            jQuery('#imageY').val(y);
+	            jQuery('#imageW').val(w);
+	            jQuery('#imageH').val(h);
+	            jQuery('#image-selection').html(
+	                    "Image Selection " + Math.round((w * imgWidth) / 100)  + " x " 
+	                    + Math.round((h * imgHeight) / 100) + " px");
+	        } else {
+	            rectDiv.attr('id', 'Image_' + annotationID).addClass('imgAlignment');
+	        }
+	
+	        if (imgWidth && imgHeight && w == 0 && h == 0) {
+	            rectDiv.attr('objectUrl', objectUrl).attr('x', x).attr('y', y)
+	                    .attr('w', w).attr('h', h).attr('class','entireImage').css({
+	                        'position' : 'absolute',
+	                        'overflow-x' : 'hidden',
+	                        'overflow-y' : 'hidden',
+	                        'z-index' : '2',
+	                        'x' : 0,
+	                        'y' : 0,
+	                        'w' : 0,
+	                        'h' : 0,
+	                        'display' : 'block',
+	                        'opacity' : '0',
+	                        'filter' : 'alpha(opacity=0)',
+	                        'background-color' : 'rgb(255, 255, 255)',
+	                        'cursor' : 'pointer',
+	                        'left' : 0,
+	                        'top' : 0,
+	                        'width' : '100%',
+	                        'height' : '100%'
+	                    });
+	        } else {
+	            rectDiv.attr('objectUrl', objectUrl).attr('x', x).attr('y', y)
+	                    .attr('w', w).attr('h', h).css({
+	                        'position' : 'absolute',
+	                        'overflow-x' : 'hidden',
+	                        'overflow-y' : 'hidden',
+	                        'z-index' : '2',
+	                        'x' : x,
+	                        'y' : y,
+	                        'w' : w,
+	                        'h' : h,
+	                        'display' : 'block',
+	                        'opacity' : '0.4',
+	                        'filter' : 'alpha(opacity=40)',
+	                        'background-color' : 'rgb(127, 127, 0)',
+	                        'cursor' : 'pointer',
+	                        'border' : '3px solid yellow',
+	                        'left' : ((x * imgWidth) / 100.00) + 'px',
+	                        'top' : ((y * imgHeight) / 100.00) + 'px',
+	                        'width' : (((w * imgWidth) / 100.00) - 6) + 'px',
+	                        'height' : (((h * imgHeight) / 100.00) - 6) + 'px'
+	                    });        
+	        }
+	        if (img && img.length == 1) {
+	            var pagediv = img.parent();
+	            if (editable == true && w == 0 && h == 0) {
+	                clearImageSelection();
+	            } else {
+	                jQuery("#image-input").contents().find('img[src="' + src + '"]').parent().append(rectDiv);
+	                
+	                if (editable == false) {
+	                    rectDiv.on('click', function(e){
+	                        var image_iframe = document.getElementById('image-input');
+	                        image_iframe.contentWindow.focusImageSelection(this, true, e.pageX, e.pageY);
+	                    });
+	                }
+	            }
+	        }
+	
+	        var verticalOffset = 30;
+	        var text_iframe = document.getElementById('text-input');
+	        var containerDiv = text_iframe.contentWindow.document
+	                .getElementById('container-div-2');
+	
+	        var selectedText = "No selection: alignment will default to entire text";
+	        var startElement = lookupElementByXPath(startOffsetXpath);
+	        var endElement = lookupElementByXPath(endOffsetXpath);
+	        
+	        if (startElement == null || endElement == null) {
+	            rectDiv.remove();
+	            return;
+	        }
+	    
+	        var range;
+	        var sel = text_iframe.contentWindow.rangy.getSelection();
+	        var range = text_iframe.contentWindow.rangy.createRange();
+	        range.selectNodeContents(containerDiv);
+	        if (startElement != containerDiv || endElement != containerDiv) {
+	            range.setStart(startElement, parseInt(startOffset));
+	            range.setEnd(endElement, parseInt(endOffset));
+	            if (range.textRange) {
+	                selectedText = range.textRange.text
+	            } else {
+	                selectedText = range.toString();
+	            }
+	        }
+	        sel.removeAllRanges();
+	        sel.addRange(range);
+	
+	        range.collapse(true);
+	
+	        var markerTextChar = "\ufeff";
+	        var markerTextCharEntity = "&#xfeff;";
+	        var markerEl;
+	        var markerId = "sel_" + new Date().getTime() + "_"
+	                + Math.random().toString().substr(2);
+	
+	        markerEl = text_iframe.contentWindow.document.createElement("span");
+	        markerEl.id = markerId;
+	        markerEl.appendChild(text_iframe.contentWindow.document
+	                .createTextNode(markerTextChar));
+	        range.insertNode(markerEl);
+	
+	        verticalOffset = markerEl.offsetTop;
+	        var parent = markerEl.parentNode;
+	        parent.removeChild(markerEl);
+	        parent.normalize();
+	
+	        var image = jQuery(text_iframe.contentWindow.document.createElement("img"));
+	        if (editable == true) {
+	            image.attr('id', 'link_image');
+	            image.addClass('textAlignment');
+	
+	            document.getElementById('textStartOffset').value = startOffset;
+	            document.getElementById('startOffsetXpath').value = startOffsetXpath;
+	            document.getElementById('textEndOffset').value = endOffset;
+	            document.getElementById('endOffsetXpath').value = endOffsetXpath;
+	            if (selectedText.toString().length > 60) {
+	                var beginsWith = selectedText.toString().substring(0, 30);
+	                var endsWith = selectedText.toString().substring(
+	                        selectedText.toString().length - 20);
+	                jQuery('#text-selection').html(
+	                        beginsWith + "..." + endsWith);
+	            } else {
+	                jQuery('#text-selection').html(selectedText.toString());
+	            }
+	        } else {
+	            image.attr('id', 'Text_' + annotationID).addClass('textAlignment');
+	        }
+	        rectDiv.attr('objectUrl', objectUrl);
+	        image.attr('style', 'position: absolute; left: 6px; top: '
+	                + verticalOffset + 'px; cursor: pointer; z-index: 2;');
+	        image.attr('height', '16');
+	        image.attr('width', '16');
+	        image.attr('objectUrl', objectUrl);
+	        image.attr('src', 'resources/link_black.png');
+	        image.attr('startOffset', startOffset);
+	        image.attr('startOffsetXpath', startOffsetXpath);
+	        image.attr('endOffset', endOffset);
+	        image.attr('endOffsetXpath', endOffsetXpath);
+	        image.attr('index', index);
+	
+	        jQuery(text_iframe.contentWindow.document.getElementById('svg-links')).append(image);
+	
+	        if (editable == false) {
+	            image.on('click', function(e){
+	                text_iframe.contentWindow.highlightImage(this, true, e.pageX, e.pageY);
+	                e.stopPropagation();
+	                //text_iframe.contentWindow.focusImageSelection(this, true, e.pageX, e.pageY);
+	            });
+	        }
+	        
+	        if (text_iframe.contentWindow.getSelection) {
+	            if (text_iframe.contentWindow.getSelection().empty) {
+	                text_iframe.contentWindow.getSelection().empty();
+	            } else if (text_iframe.contentWindow.getSelection().removeAllRanges) {
+	                text_iframe.contentWindow.getSelection().removeAllRanges();
+	            }
+	        } else if (text_iframe.contentWindow.document.selection) {
+	            text_iframe.contentWindow.document.selection.empty();
+	        }
+	
+	        alignmentsInMemory.push(annotationID);
+    	} catch (ex) {
+            if (console && console.log) {
+                console.log("Error occured: " + ex);
             }
-        }
-
-        var verticalOffset = 30;
-        var text_iframe = document.getElementById('text-input');
-        var containerDiv = text_iframe.contentWindow.document
-                .getElementById('container-div-2');
-
-        var selectedText = "No selection: alignment will default to entire text";
-        var startElement = lookupElementByXPath(startOffsetXpath);
-        var endElement = lookupElementByXPath(endOffsetXpath);
-        
-        if (startElement == null || endElement == null) {
-            rectDiv.remove();
-            return;
-        }
-    
-        var range;
-        var sel = text_iframe.contentWindow.rangy.getSelection();
-        var range = text_iframe.contentWindow.rangy.createRange();
-        range.selectNodeContents(containerDiv);
-        if (startElement != containerDiv || endElement != containerDiv) {
-            range.setStart(startElement, parseInt(startOffset));
-            range.setEnd(endElement, parseInt(endOffset));
-            if (range.textRange) {
-                selectedText = range.textRange.text
-            } else {
-                selectedText = range.toString();
-            }
-        }
-        sel.removeAllRanges();
-        sel.addRange(range);
-
-        range.collapse(true);
-
-        var markerTextChar = "\ufeff";
-        var markerTextCharEntity = "&#xfeff;";
-        var markerEl;
-        var markerId = "sel_" + new Date().getTime() + "_"
-                + Math.random().toString().substr(2);
-
-        markerEl = text_iframe.contentWindow.document.createElement("span");
-        markerEl.id = markerId;
-        markerEl.appendChild(text_iframe.contentWindow.document
-                .createTextNode(markerTextChar));
-        range.insertNode(markerEl);
-
-        verticalOffset = markerEl.offsetTop;
-        var parent = markerEl.parentNode;
-        parent.removeChild(markerEl);
-        parent.normalize();
-
-        var image = jQuery(text_iframe.contentWindow.document.createElement("img"));
-        if (editable == true) {
-            image.attr('id', 'link_image');
-            image.addClass('textAlignment');
-
-            document.getElementById('textStartOffset').value = startOffset;
-            document.getElementById('startOffsetXpath').value = startOffsetXpath;
-            document.getElementById('textEndOffset').value = endOffset;
-            document.getElementById('endOffsetXpath').value = endOffsetXpath;
-            if (selectedText.toString().length > 60) {
-                var beginsWith = selectedText.toString().substring(0, 30);
-                var endsWith = selectedText.toString().substring(
-                        selectedText.toString().length - 20);
-                jQuery('#text-selection').html(
-                        beginsWith + "..." + endsWith);
-            } else {
-                jQuery('#text-selection').html(selectedText.toString());
-            }
-        } else {
-            image.attr('id', 'Text_' + annotationID).addClass('textAlignment');
-        }
-        rectDiv.attr('objectUrl', objectUrl);
-        image.attr('style', 'position: absolute; left: 6px; top: '
-                + verticalOffset + 'px; cursor: pointer; z-index: 2;');
-        image.attr('height', '16');
-        image.attr('width', '16');
-        image.attr('objectUrl', objectUrl);
-        image.attr('src', 'resources/link_black.png');
-        image.attr('startOffset', startOffset);
-        image.attr('startOffsetXpath', startOffsetXpath);
-        image.attr('endOffset', endOffset);
-        image.attr('endOffsetXpath', endOffsetXpath);
-        image.attr('index', index);
-
-        jQuery(text_iframe.contentWindow.document.getElementById('svg-links')).append(image);
-
-        if (editable == false) {
-            image.on('click', function(e){
-                text_iframe.contentWindow.highlightImage(this, true, e.pageX, e.pageY);
-                e.stopPropagation();
-                //text_iframe.contentWindow.focusImageSelection(this, true, e.pageX, e.pageY);
-            });
-        }
-        
-        if (text_iframe.contentWindow.getSelection) {
-            if (text_iframe.contentWindow.getSelection().empty) {
-                text_iframe.contentWindow.getSelection().empty();
-            } else if (text_iframe.contentWindow.getSelection().removeAllRanges) {
-                text_iframe.contentWindow.getSelection().removeAllRanges();
-            }
-        } else if (text_iframe.contentWindow.document.selection) {
-            text_iframe.contentWindow.document.selection.empty();
-        }
-
-        alignmentsInMemory.push(annotationID);
+    	}
     }
 
     // Refresh the image reader with the images from the search bar
