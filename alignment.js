@@ -30,7 +30,7 @@
         var imageUrl = qualifyURL(imageData.uri);
         var textUrl = qualifyURL(textData.uri);
         if (!dummy){
-            //document.getElementById('text-input').contentWindow.setEditable(false);
+            document.getElementById('text-input').contentWindow.setEditable(false);
             //jQuery('#image-input').on('load',function(e) {
                 // Remove onload functions
             //    jQuery('#image-input').off();
