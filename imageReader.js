@@ -15,7 +15,7 @@ var url, uris, editable, next, prev;
 function setEditable(bool) {
     editable = bool;
     if (editable) {
-    	areaSelect['#pagediv0'] = jQuery('#pagediv0').children().imgAreaSelect({
+    	var area = jQuery('#pagediv0').children().imgAreaSelect({
             handles: true,
             instance: true,
             parent: jQuery('#pagediv0'),
@@ -26,18 +26,21 @@ function setEditable(bool) {
               jQuery('#imageY2').val((selection.y2 * 100)/jQuery(img).height());
             }
         });
+    	areaSelect['#pagediv0'] = area;
     	jQuery('#pagediv0').children().mousedown(function() {
             clearOtherSelection('#' + jQuery(this).parent().attr('id'));
         }).css("cursor","auto");
     	
     	$('#BRpager').slider( "option", "disabled", true );
     } else {
-    	areaSelect['#pagediv0'].remove();
-    	delete areaSelect['#pagediv0'];    	
-    	jQuery('#selectedImage').remove();    	
+    	if (areaSelect['#pagediv0']) {
+    		areaSelect['#pagediv0'].remove();
+    		delete areaSelect['#pagediv0'];
+    		jQuery('#selectedImage').remove();  
+    	}  	
+    	
     	jQuery('#pagediv0').children().css("cursor","move");
     	$('#BRpager').slider( "option", "disabled", false );
-    	
     	var parent = jQuery("#pagediv0").parent();
     	var html = jQuery("#pagediv0")[0].outerHTML;
     	jQuery("#pagediv0").remove();
