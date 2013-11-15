@@ -43,29 +43,21 @@ window.onload = function() {
         jQuery("#container-div-1").scrollTop(jQuery("#container-div-2").scrollTop());
     });
 
-    if (window.editable) {
-        jQuery("#container-div-1").click(function() {
-           clearSelected();
-        });
-
-        jQuery("#container-div-2").click(function() {
-            clearSelected();
-        });
-    } else {
-        jQuery("#container-div-1").click(function() {
-            clearSelected();
-
+    jQuery("#container-div-1").click(function() {
+       clearSelected();
+       if (!window.editable) {
             parent.window.jQuery.fn.clearObjectUrl();
             parent.window.jQuery.fn.clearSelectedImage();
-        });
+       }
+    });
 
-        jQuery("#container-div-2").click(function() {
-            clearSelected();
-
-            parent.window.jQuery.fn.clearObjectUrl();
-            parent.window.jQuery.fn.clearSelectedImage();
-        });
-    }
+    jQuery("#container-div-2").click(function() {
+    	clearSelected();
+        if (!window.editable) {
+             parent.window.jQuery.fn.clearObjectUrl();
+             parent.window.jQuery.fn.clearSelectedImage();
+        }
+    });
 }
 
 function iResize() {
