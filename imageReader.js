@@ -15,6 +15,12 @@ var url, uris, editable, next, prev;
 function setEditable(bool) {
     editable = bool;
     if (editable) {
+    	if (areaSelect['#pagediv0']) {
+    		areaSelect['#pagediv0'].remove();
+    		delete areaSelect['#pagediv0'];
+    		jQuery('#selectedImage').remove();  
+    	}  	
+    	
     	var area = jQuery('#pagediv0').children().imgAreaSelect({
             handles: true,
             instance: true,
@@ -41,10 +47,16 @@ function setEditable(bool) {
     	
     	jQuery('#pagediv0').children().css("cursor","move");
     	$('#BRpager').slider( "option", "disabled", false );
-    	var parent = jQuery("#pagediv0").parent();
+    	var parentElement = jQuery("#pagediv0").parent();
     	var html = jQuery("#pagediv0")[0].outerHTML;
     	jQuery("#pagediv0").remove();
-    	parent.append(html);
+    	parentElement.append(html);
+    	
+    	jQuery('#pagediv0').children().mousedown(function() {
+    		clearSelection();
+            parent.window.jQuery.fn.clearObjectUrl();
+            parent.window.jQuery.fn.clearSelectedText();
+        });
     }
 }
 
@@ -272,44 +284,34 @@ jQuery(document).ready(function() {
           }
           jQuery('#BRzoom').text(value);
 
-          var newIndices = diff(this.displayedIndices, displayedPages);
-          var oldIndices = diff(displayedPages, this.displayedIndices);
           displayedPages = this.displayedIndices;
           if (editable) {          
-            for (var i = 0; i < oldIndices.length; i++) {
-              delete areaSelect['#pagediv' + oldIndices[i]];
-            }
-            for (var i = 0; i < newIndices.length; i++) {   
-              var area = jQuery('#pagediv' + newIndices[i]).children().imgAreaSelect({
-                handles: true,
-                instance: true,
-                parent: jQuery('#pagediv' + newIndices[i]),
-                onSelectEnd: function(img, selection) {
-                  jQuery('#imageX1').val((selection.x1 * 100)/jQuery(img).width());
-                  jQuery('#imageY1').val((selection.y1 * 100)/jQuery(img).height());
-                  jQuery('#imageX2').val((selection.x2 * 100)/jQuery(img).width());
-                  jQuery('#imageY2').val((selection.y2 * 100)/jQuery(img).height());
-                }
-              });
-              areaSelect['#pagediv' + newIndices[i]] = area;  
-              jQuery('#pagediv' + newIndices[i]).children()
-                  .mousedown(function() {
-                      clearOtherSelection('#' + jQuery(this).parent().attr('id'));
-                  })
-                  .css("cursor","auto");
-            }
-            parent.window.jQuery.fn.showSelectedImage();
+              delete areaSelect['#pagediv0'];
+	          var area = jQuery('#pagediv0').children().imgAreaSelect({
+	            handles: true,
+	            instance: true,
+	            parent: jQuery('#pagediv0'),
+	            onSelectEnd: function(img, selection) {
+	              jQuery('#imageX1').val((selection.x1 * 100)/jQuery(img).width());
+	              jQuery('#imageY1').val((selection.y1 * 100)/jQuery(img).height());
+	              jQuery('#imageX2').val((selection.x2 * 100)/jQuery(img).width());
+	              jQuery('#imageY2').val((selection.y2 * 100)/jQuery(img).height());
+	            }
+	          });
+	          areaSelect['#pagediv0'] = area;  
+	          jQuery('#pagediv0').children()
+	              .mousedown(function() {
+	                  clearOtherSelection('#' + jQuery(this).parent().attr('id'));
+	              })
+	              .css("cursor","auto");
+              parent.window.jQuery.fn.showSelectedImage();
           } else {
-            for (var i = 0; i < newIndices.length; i++) {
-              jQuery('#pagediv' + newIndices[i]).children().click(function() {
+              jQuery('#pagediv0').children().click(function() {
                 clearSelection();
                 parent.window.jQuery.fn.clearObjectUrl();
                 parent.window.jQuery.fn.clearSelectedText();
               });
-            }
-            if (newIndices.length > 0) {
-                parent.window.jQuery.fn.refreshOrUpdateAnnotations();
-            }
+              parent.window.jQuery.fn.refreshOrUpdateAnnotations();
           }
         },
         getPageNum : function(index) {
@@ -449,6 +451,11 @@ function initBookreader() {
     if (editable) {
         jQuery('#BRcontainer').attr('onscroll','clearSelection();');
     }
+    jQuery('#pagediv0').children().click(function() {
+        clearSelection();
+        parent.window.jQuery.fn.clearObjectUrl();
+        parent.window.jQuery.fn.clearSelectedText();
+    });
 }
 
 function diff(array1, array2) {
