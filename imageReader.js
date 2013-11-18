@@ -6,7 +6,7 @@ function getUrlVars() {
     return vars;
 }
 
-var areaSelect = {};
+var areaSelect;
 var displayedPages = [];
 var numberPages = 1;
 
@@ -15,13 +15,13 @@ var url, uris, editable, next, prev;
 function setEditable(bool) {
     editable = bool;
     if (editable) {
-    	if (areaSelect['#pagediv0']) {
-    		areaSelect['#pagediv0'].remove();
-    		delete areaSelect['#pagediv0'];
+    	if (areaSelect) {
+    		areaSelect.remove();
+    		delete areaSelect;
     		jQuery('#selectedImage').remove();  
     	}  	
     	
-    	var area = jQuery('#pagediv0').children().imgAreaSelect({
+    	areaSelect = jQuery('#pagediv0').children().imgAreaSelect({
             handles: true,
             instance: true,
             parent: jQuery('#pagediv0'),
@@ -32,16 +32,12 @@ function setEditable(bool) {
               jQuery('#imageY2').val((selection.y2 * 100)/jQuery(img).height());
             }
         });
-    	areaSelect['#pagediv0'] = area;
-    	jQuery('#pagediv0').children().mousedown(function() {
-            clearOtherSelection('#' + jQuery(this).parent().attr('id'));
-        }).css("cursor","auto");
     	
     	$('#BRpager').slider( "option", "disabled", true );
     } else {
-    	if (areaSelect['#pagediv0']) {
-    		areaSelect['#pagediv0'].remove();
-    		delete areaSelect['#pagediv0'];
+    	if (areaSelect) {
+    		areaSelect.remove();
+    		delete areaSelect;
     		jQuery('#selectedImage').remove();  
     	}  	
     	
@@ -286,8 +282,8 @@ jQuery(document).ready(function() {
 
           displayedPages = this.displayedIndices;
           if (editable) {          
-              delete areaSelect['#pagediv0'];
-	          var area = jQuery('#pagediv0').children().imgAreaSelect({
+              delete areaSelect;
+              areaSelect = jQuery('#pagediv0').children().imgAreaSelect({
 	            handles: true,
 	            instance: true,
 	            parent: jQuery('#pagediv0'),
@@ -298,12 +294,7 @@ jQuery(document).ready(function() {
 	              jQuery('#imageY2').val((selection.y2 * 100)/jQuery(img).height());
 	            }
 	          });
-	          areaSelect['#pagediv0'] = area;  
-	          jQuery('#pagediv0').children()
-	              .mousedown(function() {
-	                  clearOtherSelection('#' + jQuery(this).parent().attr('id'));
-	              })
-	              .css("cursor","auto");
+	          jQuery('#pagediv0').children().css("cursor","auto");
               parent.window.jQuery.fn.showSelectedImage();
           } else {
               jQuery('#pagediv0').children().click(function() {
@@ -477,35 +468,18 @@ function diff(array1, array2) {
 }
 
 function getSelection() {
-    for (var key in areaSelect) {
-        var selection = areaSelect[key].getSelection();
-        if (selection.width != 0 || selection.height != 0) {
-            return areaSelect[key];
-        }
+	if (!areaSelect) {
+		return null;
+	}
+    var selection = areaSelect.getSelection();
+    if (selection.width != 0 || selection.height != 0) {
+        return areaSelect;
     }
 }
 
 function clearSelection() {  
     clearSelectedImage();
     var sel = getSelection();
-    if (sel) {
-        sel.cancelSelection();
-    }
-}
-
-function getOtherSelection(id) {
-    for (var key in areaSelect) {
-        if (id != key) {
-            var selection = areaSelect[key].getSelection();
-            if (selection.width != 0 || selection.height != 0) {
-                return areaSelect[key];
-            }
-        }
-    }
-}
-
-function clearOtherSelection(id) {
-    var sel = getOtherSelection(id);
     if (sel) {
         sel.cancelSelection();
     }
