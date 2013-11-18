@@ -281,8 +281,11 @@ jQuery(document).ready(function() {
           jQuery('#BRzoom').text(value);
 
           displayedPages = this.displayedIndices;
-          if (editable) {          
-              delete areaSelect;
+          if (editable) {     
+        	  if (areaSelect) {
+        		  areaSelect.remove();
+              	  delete areaSelect;
+        	  }
               areaSelect = jQuery('#pagediv0').children().imgAreaSelect({
 	            handles: true,
 	            instance: true,
