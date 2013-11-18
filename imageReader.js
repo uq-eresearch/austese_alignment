@@ -494,13 +494,12 @@ function resetImage(x1, y1, x2, y2) {
     var imgHeight = img.height();
     var imgWidth = img.width();
 
-    var selection = areaSelect['#' + jQuery('#selectedImage').parent().attr('id')];
-    selection.setOptions({
+    areaSelect.setOptions({
         show : true
     });
-    selection.setSelection(((x1 * imgWidth)/100.00), ((y1 * imgHeight)/100.00), 
+    areaSelect.setSelection(((x1 * imgWidth)/100.00), ((y1 * imgHeight)/100.00), 
                 ((x2 * imgWidth)/100.00), ((y2 * imgHeight)/100.00));
-    selection.update();
+    areaSelect.update();
 
     jQuery('#imageX1').val(x1);
     jQuery('#imageY1').val(y1);
